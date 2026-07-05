@@ -45,6 +45,13 @@ function ZamaBridge({ children }: { children: ReactNode }) {
 // ZamaProvider. The Zama react-sdk hooks run on TanStack Query, so the QueryClient MUST wrap ZamaProvider.
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
+  // Client-only provider tree. During static prerender (build) / SSR there is no wallet or FHE context, and
+  // Next's built-in /404 and /_global-error pages are prerendered THROUGH this root layout — mounting the
+  // wallet/FHE providers there trips a Next static-generation invariant. Gate the whole tree on mount: SSR
+  // renders bare children, the client mounts the real providers. (The app page is dynamic ssr:false anyway.)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return <>{children}</>;
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>

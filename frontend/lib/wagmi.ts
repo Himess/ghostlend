@@ -9,7 +9,7 @@ export const wagmiConfig = createConfig({
   transports: {
     [sepolia.id]: http("https://ethereum-sepolia-rpc.publicnode.com"),
   },
-  ssr: true,
+  ssr: false, // fully client-rendered app (dynamic ssr:false); avoids wagmi's SSR cookie path breaking the build
 });
 
 declare module "wagmi" {

@@ -9,6 +9,7 @@ import { shortAddr } from "@/lib/format";
 import { Dashboard } from "@/components/screens/Dashboard";
 import { Markets } from "@/components/screens/Markets";
 import { Position } from "@/components/screens/Position";
+import { Balances } from "@/components/screens/Balances";
 import { Leverage } from "@/components/screens/Leverage";
 import { Vault } from "@/components/screens/Vault";
 import { GhostGate } from "@/components/screens/GhostGate";
@@ -37,6 +38,7 @@ function Screen() {
     case "dashboard": return <Dashboard />;
     case "markets": return <Markets />;
     case "position": return <Position />;
+    case "balances": return <Balances />;
     case "leverage": return <Leverage />;
     case "vault": return <Vault />;
     case "ghostgate": return <GhostGate />;

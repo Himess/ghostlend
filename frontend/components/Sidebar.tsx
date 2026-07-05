@@ -23,6 +23,7 @@ const ICON: Record<Route, ReactNode> = {
   dashboard: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.7"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.7"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.7"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.7"/></svg>),
   markets: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><line x1="3.5" y1="20.5" x2="20.5" y2="20.5"/><rect x="5" y="11" width="3.4" height="7.2" rx="1"/><rect x="10.3" y="5.5" width="3.4" height="12.7" rx="1"/><rect x="15.6" y="8.5" width="3.4" height="9.7" rx="1"/></svg>),
   position: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7.5 2.7v5.5c0 4.6-3.2 7.9-7.5 9.3-4.3-1.4-7.5-4.7-7.5-9.3V5.7z"/><path d="M9 12l2.2 2.2L15.2 10"/></svg>),
+  balances: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2.5" y="6" width="19" height="13" rx="3"/><path d="M2.5 10h19"/><path d="M16 14.5h2.5"/></svg>),
   leverage: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 16.5l6-6 4 4 8-8.5"/><path d="M15 6h6v6"/></svg>),
   vault: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="6.4" rx="7.3" ry="3.1"/><path d="M4.7 6.4v5.4c0 1.7 3.3 3.1 7.3 3.1s7.3-1.4 7.3-3.1V6.4"/><path d="M4.7 11.8v5.4c0 1.7 3.3 3.1 7.3 3.1s7.3-1.4 7.3-3.1v-5.4"/></svg>),
   ghostgate: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 20.5V11a7 7 0 0 1 14 0v9.5c0 1-1.15 1.55-1.9.85l-1.5-1.4a1.15 1.15 0 0 0-1.6 0l-1.15 1.1a1.15 1.15 0 0 1-1.6 0l-1.15-1.1a1.15 1.15 0 0 0-1.6 0l-1.5 1.4c-.75.7-1.9.15-1.9-.85Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/><circle cx="9.4" cy="10.8" r="1.15" fill="currentColor"/><circle cx="14.6" cy="10.8" r="1.15" fill="currentColor"/></svg>),
@@ -32,7 +33,7 @@ const ICON: Record<Route, ReactNode> = {
 
 const ITEMS: { r: Route; label: ReactNode }[] = [
   { r: "dashboard", label: "Dashboard" }, { r: "markets", label: "Markets" },
-  { r: "position", label: "My Position" }, { r: "leverage", label: "Leverage" },
+  { r: "position", label: "My Position" }, { r: "balances", label: "Balances" }, { r: "leverage", label: "Leverage" },
   { r: "vault", label: (<span>Vault <span style={css("opacity:.5;font-weight:500")}>· Earn</span></span>) },
   { r: "ghostgate", label: "GhostGate" }, { r: "faucet", label: "Faucet" }, { r: "status", label: "Status" },
 ];

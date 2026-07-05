@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useContext, useState, ReactNode } from "react";
 
-export type Route = "dashboard" | "markets" | "position" | "leverage" | "vault" | "ghostgate" | "faucet" | "status";
+export type Route = "dashboard" | "markets" | "position" | "balances" | "leverage" | "vault" | "ghostgate" | "faucet" | "status";
 export type MarketAction = "supply" | "withdraw" | "deposit" | "borrow" | "repay";
 
 type NavState = {

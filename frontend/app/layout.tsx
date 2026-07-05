@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   description: "Confidential lending, vault-collateralized leverage, and GhostGate netting on Zama FHEVM (Sepolia).",
 };
 
+// Fully client-rendered dApp (wallet + FHE SDK) — render on demand, don't statically prerender at build.
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">

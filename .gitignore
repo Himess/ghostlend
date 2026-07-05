@@ -38,3 +38,7 @@ yarn.lock
 # deployments: keep the public address files (ADDRESSES.md, sepolia*.json, verify-pool.js),
 # drop only the local hardhat output
 deployments/localhost
+
+# vercel
+.vercel
+**/.vercel
