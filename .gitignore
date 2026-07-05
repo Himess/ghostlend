@@ -1,0 +1,40 @@
+# dependencies
+node_modules
+**/node_modules
+.pnp.*
+
+# build / generated
+artifacts
+cache
+types
+fhevmTemp
+dist
+build
+coverage
+.coverage_artifacts
+.coverage_cache
+.coverage_contracts
+coverage.json
+tmp
+
+# next.js (frontend)
+.next
+**/.next
+next-env.d.ts
+**/next-env.d.ts
+
+# reference clones (full git repos — do NOT commit)
+_repos
+
+# SECRETS — never commit (testnet key lives here)
+probe/secrets.json
+*.env
+.env*
+*.log
+.DS_Store
+pnpm-lock.yaml
+yarn.lock
+
+# deployments: keep the public address files (ADDRESSES.md, sepolia*.json, verify-pool.js),
+# drop only the local hardhat output
+deployments/localhost

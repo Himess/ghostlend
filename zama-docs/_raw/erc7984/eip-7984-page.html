@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+    
+      <title>ERC-7984: Confidential Fungible Token</title>
+      <meta property="og:title" content="ERC-7984: Confidential Fungible Token" />
+    
+    <meta name="description" content="Confidential fungible tokens use an account-based accounting model while maintaining the confidentiality of transfer amounts and balances." />
+    <meta property="og:description" content="Confidential fungible tokens use an account-based accounting model while maintaining the confidentiality of transfer amounts and balances." />
+    <meta name="twitter:description" content="Confidential fungible tokens use an account-based accounting model while maintaining the confidentiality of transfer amounts and balances." />
+  
+  <meta name="generator" content="Jekyll" />
+  <meta property="og:locale" content="en_US" />
+  <link rel="canonical" href="https://eips.ethereum.org/EIPS/eip-7984" />
+  <meta property="og:url" content="https://eips.ethereum.org/EIPS/eip-7984" />
+  <meta property="og:site_name" content="Ethereum Improvement Proposals" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://eips.ethereum.org/assets/images/eip-og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://eips.ethereum.org/assets/images/eip-og-image.png" />
+  <meta name="twitter:site" content="@" />
+  <script type="application/ld+json">
+    {
+      "@type": "WebSite",
+      "url": "https://eips.ethereum.org",
+      "name": "Ethereum Improvement Proposals",
+      "description": "Ethereum Improvement Proposals (EIPs) describe standards for the Ethereum platform, such as core protocol specifications.",
+      "@context": "https://schema.org"
+    }
+  </script>
+  <link rel="stylesheet" href="/assets/css/style.css" />
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" /><link type="application/atom+xml" rel="alternate" href="https://eips.ethereum.org/feed.xml" title="Ethereum Improvement Proposals" /><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  <link rel="stylesheet" href="/assets/css/override.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js" integrity="sha384-Rx+T1VzGupg4BHQYs2gCW9It+akI2MM/mndMCy36UVfodzcJcF0GGLxZIzObiEfa" crossorigin="anonymous"></script>
+  <script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", (event) => {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    });
+  </script>
+  <script type="text/javascript">
+    window.MathJax = {
+      loader: {
+        load: ['input/tex-base', 'output/chtml']
+      },
+      tex: {
+        inlineMath: [['$', '$']],
+        displayMath: [['$$', '$$']],
+        processEscapes: true,
+        processEnvironments: false,
+        processRefs: false
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js" integrity="sha384-/1zmJ1mBdfKIOnwPxpdG6yaRrxP6qu3eVYm0cz2nOx+AcL4d3AqEFrwcqGZVVroG" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/citation-js/0.6.7/citation.min.js" integrity="sha512-N+LDFMa9owHXGS+CyMrBvuxq2QuGl3fiB/7cys3aUEL7K6P1soHGqsS0sjHXZpwNd9Kz0m3R4IPy1HYRi6ROEQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script type="text/javascript">
+    addEventListener('DOMContentLoaded', async () => {
+      const Cite = window.require('citation-js');
+      const citationElements = document.querySelectorAll('.language-csl-json');
+      for (let citationElement of citationElements) {
+        try {
+          const citation = await Cite.async(citationElement);
+          const template = document.createElement('template');
+          template.innerHTML = citation.format('bibliography', {
+            format: 'html',
+            template: 'apa',
+            lang: 'en-US'
+          });
+          if (citationElement.parentElement && citationElement.parentElement.matches('pre')) {
+            citationElement.parentElement.replaceWith(template.content);
+          } else {
+            citationElement.replaceWith(template.content);
+          }
+        } catch (e) {
+          console.error("unable to render citation", e);
+        }
+      }
+    });
+  </script>
+</head>
+<body><header class="site-header" role="banner">
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Ethereum Improvement Proposals</a><nav class="site-nav d-flex">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger row p-2"><a class="page-link col" href="/all">All</a><a class="page-link col" href="/core">Core</a><a class="page-link col" href="/networking">Networking</a><a class="page-link col" href="/interface">Interface</a><a class="page-link col" href="/erc">ERC</a><a class="page-link col" href="/meta">Meta</a><a class="page-link col" href="/informational">Informational</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="bi-megaphone-fill" fill="currentColor" viewBox="0 0 16 16">
+    <title>Alert</title>
+    <path d="M13 2.5a1.5 1.5 0 0 1 3 0v11a1.5 1.5 0 0 1-3 0v-11zm-1 .724c-2.067.95-4.539 1.481-7 1.656v6.237a25.222 25.222 0 0 1 1.088.085c2.053.204 4.038.668 5.912 1.56V3.224zm-8 7.841V4.934c-.68.027-1.399.043-2.008.053A2.02 2.02 0 0 0 0 7v2c0 1.106.896 1.996 1.994 2.009a68.14 68.14 0 0 1 .496.008 64 64 0 0 1 1.51.048zm1.39 1.081c.285.021.569.047.85.078l.253 1.69a1 1 0 0 1-.983 1.187h-.548a1 1 0 0 1-.916-.599l-1.314-2.48a65.81 65.81 0 0 1 1.692.064c.327.017.65.037.966.06z"/>
+  </symbol>
+  <symbol id="bi-code" fill="currentColor" viewBox="0 0 16 16">
+    <title>Source</title>
+    <path d="M5.854 4.854a.5.5 0 1 0-.708-.708l-3.5 3.5a.5.5 0 0 0 0 .708l3.5 3.5a.5.5 0 0 0 .708-.708L2.707 8l3.147-3.146zm4.292 0a.5.5 0 0 1 .708-.708l3.5 3.5a.5.5 0 0 1 0 .708l-3.5 3.5a.5.5 0 0 1-.708-.708L13.293 8l-3.147-3.146z"/>
+  </symbol>
+  <svg id="bi-chat" fill="currentColor" viewBox="0 0 16 16">
+    <title>Discuss</title>
+    <path d="M2.678 11.894a1 1 0 0 1 .287.801 10.97 10.97 0 0 1-.398 2c1.395-.323 2.247-.697 2.634-.893a1 1 0 0 1 .71-.074A8.06 8.06 0 0 0 8 14c3.996 0 7-2.807 7-6 0-3.192-3.004-6-7-6S1 4.808 1 8c0 1.468.617 2.83 1.678 3.894zm-.493 3.905a21.682 21.682 0 0 1-.713.129c-.2.032-.352-.176-.273-.362a9.68 9.68 0 0 0 .244-.637l.003-.01c.248-.72.45-1.548.524-2.319C.743 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7-3.582 7-8 7a9.06 9.06 0 0 1-2.347-.306c-.52.263-1.639.742-3.468 1.105z"/>
+  </svg>
+</svg>
+
+<div class="home">
+  
+  
+  
+ 
+  <span class="h5">
+    
+    
+    
+      <span class="badge text-light bg-warning" data-bs-toggle="tooltip" data-bs-title="This EIP is not yet recommended for general use or implementation, as it is subject to normative (breaking) changes.">⚠️ Draft</span>
+    
+    
+    
+       
+    
+      <a class="badge text-light bg-primary" data-bs-toggle="tooltip" data-bs-title="Application-level standards and conventions, including contract standards such as token standards, name registries, URI schemes, library/package formats, and wallet formats." href="../erc">Standards Track: ERC</a>
+    
+  </span>
+  <h1 class="page-heading">
+    ERC-7984: Confidential Fungible Token
+    <a href="https://ethereum-magicians.org/t/erc-7984-confidential-fungible-token-interface/24735" class="no-underline">
+      <svg role="img" aria-label="Discuss" class="inline-svg" xmlns="https://www.w3.org/2000/svg" viewBox="0 0 16 16">
+        <use xlink:href="#bi-chat"/>
+      </svg>
+    </a>
+    <a href="https://github.com/ethereum/EIPs/blob/master/EIPS/eip-7984.md" class="no-underline">
+      <svg role="img" aria-label="Source" class="inline-svg" xmlns="https://www.w3.org/2000/svg" viewBox="0 0 16 16">
+        <use xlink:href="#bi-code"/>
+      </svg>
+    </a>
+  </h1>
+  <h3>Confidential fungible tokens use an account-based accounting model while maintaining the confidentiality of transfer amounts and balances.</h3>
+  <table class="table table-borderless preamble">
+    <tbody>
+      <tr>
+        <th scope="row">Authors</th>
+        <td>Aryeh Greenberg&nbsp;(<a href="https://github.com/arr00">@arr00</a>), Ernesto García&nbsp;(<a href="https://github.com/ernestognw">@ernestognw</a>), Hadrien Croubois&nbsp;(<a href="https://github.com/Amxx">@Amxx</a>), Ghazi Ben Amor&nbsp;(<a href="https://github.com/GBAZama">@GBAZama</a>), Clement Danjou&nbsp;(<a href="https://github.com/immortal-tofu">@immortal-tofu</a>), Joseph Andre Turk&nbsp;(<a href="https://github.com/jatZama">@jatZama</a>), Silas Davis&nbsp;(<a href="https://github.com/silasdavis">@silasdavis</a>), Nicolas Pasquier&nbsp;(<a href="https://github.com/npasquie">@npasquie</a>)</td>
+      </tr>
+      
+        <tr>
+          <th scope="row">Created</th>
+          <td>2025-07-03</td>
+        </tr>
+      
+      
+             
+      
+        <tr>
+          <th scope="row">Discussion Link</th>
+          <td><a href="https://ethereum-magicians.org/t/erc-7984-confidential-fungible-token-interface/24735" target="_blank" rel="noopener">https://ethereum-magicians.org/t/erc-7984-confidential-fungible-token-interface/24735</a></td>
+        </tr>
+      
+      
+        <tr>
+          <th scope="row">Requires</th>
+          <td>
+
+  <a href="eip-165">EIP-165</a>
+
+</td>
+        </tr>
+      
+    </tbody>
+  </table>
+  <br/>
+
+  
+
+  <div class="toc">
+    <h2>Table of Contents</h2>
+    <ul>
+  <li><a href="#abstract">Abstract</a></li>
+  <li><a href="#motivation">Motivation</a></li>
+  <li><a href="#specification">Specification</a>
+    <ul>
+      <li><a href="#nomenclature">Nomenclature</a></li>
+      <li><a href="#token">Token</a></li>
+      <li><a href="#methods">Methods</a></li>
+      <li><a href="#events">Events</a></li>
+      <li><a href="#callback-details">Callback Details</a></li>
+      <li><a href="#contract-receivers">Contract Receivers</a></li>
+    </ul>
+  </li>
+  <li><a href="#rationale">Rationale</a>
+    <ul>
+      <li><a href="#technology-agnostic-design">Technology Agnostic Design</a></li>
+      <li><a href="#operator-model">Operator Model</a></li>
+      <li><a href="#data-parameter">Data Parameter</a></li>
+    </ul>
+  </li>
+  <li><a href="#security-considerations">Security Considerations</a></li>
+  <li><a href="#copyright">Copyright</a></li>
+</ul>
+
+  </div>
+
+  <h2 id="abstract">
+      
+      
+        <a href="#abstract" class="anchor-link"></a> Abstract
+      
+      
+    </h2>
+
+<p>The following standard describes confidential fungible tokens via pointers. All amounts in this standard are represented by confidential pointers; therefore, balances and transfer amounts are confidential. Pointers refer to data stored elsewhere–onchain or offchain. The logistics of pointer resolution, operation, and location are implementation specific. The interface defines functions to transfer tokens with pointers, as well as approve operators, allowing the token to be transferred by a third party.</p>
+  
+    <h2 id="motivation">
+      
+      
+        <a href="#motivation" class="anchor-link"></a> Motivation
+      
+      
+    </h2>
+
+<p>Confidential tokens enable private value transfer which is vital for many usecases such as payroll, confidential DeFi, institutional settlement, and more.
+A standard interface allows pointer based confidential tokens on Ethereum to be reused by other applications: from privacy-focused wallets to decentralized exchanges, while keeping transaction amounts private from public view.</p>
+  
+    <h2 id="specification">
+      
+      
+        <a href="#specification" class="anchor-link"></a> Specification
+      
+      
+    </h2>
+
+<p>The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “NOT RECOMMENDED”, “MAY”, and “OPTIONAL” in this document are to be interpreted as described in <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a> and <a href="https://www.rfc-editor.org/rfc/rfc8174">RFC 8174</a>.</p>
+  
+    <h3 id="nomenclature">
+      
+      
+        <a href="#nomenclature" class="anchor-link"></a> Nomenclature
+      
+      
+    </h3>
+
+<p>All amounts in this ERC are pointer based amounts represented by <code class="language-plaintext highlighter-rouge">bytes32</code> pointers unless otherwise specified. The resolution and manipulation of these pointers is implementation specific.</p>
+  
+    <h3 id="token">
+      
+      
+        <a href="#token" class="anchor-link"></a> Token
+      
+      
+    </h3>
+
+<p>Compliant tokens MUST implement <a href="/EIPS/eip-165">ERC-165</a>. The <code class="language-plaintext highlighter-rouge">supportsInterface</code> function MUST return <code class="language-plaintext highlighter-rouge">true</code> if <code class="language-plaintext highlighter-rouge">0x4958f2a4</code> is passed through the <code class="language-plaintext highlighter-rouge">interfaceID</code> argument.</p>
+  
+    <h3 id="methods">
+      
+      
+        <a href="#methods" class="anchor-link"></a> Methods
+      
+      
+    </h3>
+
+<p>Compliant tokens MUST implement the following methods, unless otherwise specified:</p>
+
+<ul>
+  <li>
+  
+    <h4 id="name">
+      
+      
+        <a href="#name" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">name()</code>
+      
+      
+    </h4>
+
+    <p>Returns the name of the token - e.g. <code class="language-plaintext highlighter-rouge">"MyConfidentialToken"</code>.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">name</span><span class="p">()</span> <span class="k">external</span> <span class="k">view</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">string</span> <span class="k">memory</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="symbol">
+      
+      
+        <a href="#symbol" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">symbol()</code>
+      
+      
+    </h4>
+
+    <p>Returns the symbol of the token - e.g. <code class="language-plaintext highlighter-rouge">"MCT"</code>.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">symbol</span><span class="p">()</span> <span class="k">external</span> <span class="k">view</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">string</span> <span class="k">memory</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="decimals">
+      
+      
+        <a href="#decimals" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">decimals()</code>
+      
+      
+    </h4>
+
+    <p>Returns the number of decimals the token uses (e.g. <code class="language-plaintext highlighter-rouge">6</code>) as a plaintext <code class="language-plaintext highlighter-rouge">uint8</code>.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">decimals</span><span class="p">()</span> <span class="k">external</span> <span class="k">view</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">uint8</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="contracturi">
+      
+      
+        <a href="#contracturi" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">contractURI()</code>
+      
+      
+    </h4>
+
+    <p>Returns the metadata URI for the token. SHOULD follow the schema defined in <a href="/EIPS/eip-7572">ERC-7572</a>.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">contractURI</span><span class="p">()</span> <span class="k">external</span> <span class="k">view</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">string</span> <span class="k">memory</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="confidentialtotalsupply">
+      
+      
+        <a href="#confidentialtotalsupply" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">confidentialTotalSupply()</code>
+      
+      
+    </h4>
+
+    <p>Returns the total token supply.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">confidentialTotalSupply</span><span class="p">()</span> <span class="k">external</span> <span class="k">view</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">bytes32</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="confidentialbalanceofaddress">
+      
+      
+        <a href="#confidentialbalanceofaddress" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">confidentialBalanceOf(address)</code>
+      
+      
+    </h4>
+
+    <p>Returns the balance of <code class="language-plaintext highlighter-rouge">account</code>.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">confidentialBalanceOf</span><span class="p">(</span><span class="kt">address</span> <span class="n">account</span><span class="p">)</span> <span class="k">external</span> <span class="k">view</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">bytes32</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="isoperatoraddressaddress">
+      
+      
+        <a href="#isoperatoraddressaddress" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">isOperator(address,address)</code>
+      
+      
+    </h4>
+
+    <p>Returns <code class="language-plaintext highlighter-rouge">true</code> if <code class="language-plaintext highlighter-rouge">spender</code> is currently authorized to transfer tokens on behalf of <code class="language-plaintext highlighter-rouge">holder</code>.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">isOperator</span><span class="p">(</span><span class="kt">address</span> <span class="n">holder</span><span class="p">,</span> <span class="kt">address</span> <span class="n">spender</span><span class="p">)</span> <span class="k">external</span> <span class="k">view</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">bool</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="setoperatoraddressuint48">
+      
+      
+        <a href="#setoperatoraddressuint48" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">setOperator(address,uint48)</code>
+      
+      
+    </h4>
+
+    <p>Authorizes <code class="language-plaintext highlighter-rouge">operator</code> to transfer tokens on behalf of the caller until timestamp <code class="language-plaintext highlighter-rouge">until</code>–passed as a plaintext <code class="language-plaintext highlighter-rouge">uint48</code>. An operator may transfer any amount of tokens on behalf of a holder while approved. Accounts may have multiple simultaneous operators.</p>
+
+    <p>MUST emit the <code class="language-plaintext highlighter-rouge">OperatorSet</code> event.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">setOperator</span><span class="p">(</span><span class="kt">address</span> <span class="n">operator</span><span class="p">,</span> <span class="kt">uint48</span> <span class="n">until</span><span class="p">)</span> <span class="k">external</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="confidentialtransferaddressbytes32">
+      
+      
+        <a href="#confidentialtransferaddressbytes32" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">confidentialTransfer(address,bytes32)</code>
+      
+      
+    </h4>
+
+    <p>Transfers <code class="language-plaintext highlighter-rouge">amount</code> of tokens to address <code class="language-plaintext highlighter-rouge">to</code>. The function MAY revert if the caller’s balance does not have enough tokens to spend.</p>
+
+    <p>Returns the actual amount that was transferred.</p>
+
+    <p>MUST emit the <code class="language-plaintext highlighter-rouge">ConfidentialTransfer</code> event.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">confidentialTransfer</span><span class="p">(</span><span class="kt">address</span> <span class="n">to</span><span class="p">,</span> <span class="kt">bytes32</span> <span class="n">amount</span><span class="p">)</span> <span class="k">external</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">bytes32</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="confidentialtransferaddressbytes32bytes">
+      
+      
+        <a href="#confidentialtransferaddressbytes32bytes" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">confidentialTransfer(address,bytes32,bytes)</code>
+      
+      
+    </h4>
+
+    <p>Transfers <code class="language-plaintext highlighter-rouge">amount</code> of tokens to address <code class="language-plaintext highlighter-rouge">to</code>. The function MAY revert if the caller’s balance does not have enough tokens to spend.</p>
+
+    <p>The <code class="language-plaintext highlighter-rouge">data</code> parameter contains implementation-specific information such as cryptographic proofs.</p>
+
+    <p>Returns the actual amount that was transferred.</p>
+
+    <p>MUST emit the <code class="language-plaintext highlighter-rouge">ConfidentialTransfer</code> event.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">confidentialTransfer</span><span class="p">(</span><span class="kt">address</span> <span class="n">to</span><span class="p">,</span> <span class="kt">bytes32</span> <span class="n">amount</span><span class="p">,</span> <span class="kt">bytes</span> <span class="k">calldata</span> <span class="n">data</span><span class="p">)</span> <span class="k">external</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">bytes32</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="confidentialtransferfromaddressaddressbytes32">
+      
+      
+        <a href="#confidentialtransferfromaddressaddressbytes32" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">confidentialTransferFrom(address,address,bytes32)</code>
+      
+      
+    </h4>
+
+    <p>Transfers <code class="language-plaintext highlighter-rouge">amount</code> of tokens from address <code class="language-plaintext highlighter-rouge">from</code> to address <code class="language-plaintext highlighter-rouge">to</code>. The function MAY revert if the <code class="language-plaintext highlighter-rouge">from</code> account’s balance does not have enough tokens to spend.</p>
+
+    <p>Returns the actual amount that was transferred.</p>
+
+    <p>MUST revert if the caller is not an operator for <code class="language-plaintext highlighter-rouge">from</code>.</p>
+
+    <p>MUST emit the <code class="language-plaintext highlighter-rouge">ConfidentialTransfer</code> event.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">confidentialTransferFrom</span><span class="p">(</span><span class="kt">address</span> <span class="n">from</span><span class="p">,</span> <span class="kt">address</span> <span class="n">to</span><span class="p">,</span> <span class="kt">bytes32</span> <span class="n">amount</span><span class="p">)</span> <span class="k">external</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">bytes32</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="confidentialtransferfromaddressaddressbytes32bytes">
+      
+      
+        <a href="#confidentialtransferfromaddressaddressbytes32bytes" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">confidentialTransferFrom(address,address,bytes32,bytes)</code>
+      
+      
+    </h4>
+
+    <p>Transfers <code class="language-plaintext highlighter-rouge">amount</code> of tokens from address <code class="language-plaintext highlighter-rouge">from</code> to address <code class="language-plaintext highlighter-rouge">to</code>. The function MAY revert if the <code class="language-plaintext highlighter-rouge">from</code> account’s balance does not have enough tokens to spend.</p>
+
+    <p>The <code class="language-plaintext highlighter-rouge">data</code> parameter contains implementation-specific information such as cryptographic proofs.</p>
+
+    <p>Returns the actual amount that was transferred.</p>
+
+    <p>MUST revert if the caller is not an operator for <code class="language-plaintext highlighter-rouge">from</code>.</p>
+
+    <p>MUST emit the <code class="language-plaintext highlighter-rouge">ConfidentialTransfer</code> event.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">confidentialTransferFrom</span><span class="p">(</span><span class="kt">address</span> <span class="n">from</span><span class="p">,</span> <span class="kt">address</span> <span class="n">to</span><span class="p">,</span> <span class="kt">bytes32</span> <span class="n">amount</span><span class="p">,</span> <span class="kt">bytes</span> <span class="k">calldata</span> <span class="n">data</span><span class="p">)</span> <span class="k">external</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">bytes32</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="confidentialtransferandcalladdressbytes32bytes">
+      
+      
+        <a href="#confidentialtransferandcalladdressbytes32bytes" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">confidentialTransferAndCall(address,bytes32,bytes)</code>
+      
+      
+    </h4>
+
+    <p>Transfers <code class="language-plaintext highlighter-rouge">amount</code> of tokens to address <code class="language-plaintext highlighter-rouge">to</code>. The function MAY revert if the caller’s balance does not have enough tokens to spend.</p>
+
+    <p>The <code class="language-plaintext highlighter-rouge">data</code> parameter contains implementation-specific information such as cryptographic proofs.</p>
+
+    <p>See <a href="#callback-details">Callback Details</a> below for details on the callback flow.</p>
+
+    <p>Returns the actual amount that was transferred.</p>
+
+    <p>MUST emit the <code class="language-plaintext highlighter-rouge">ConfidentialTransfer</code> event.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">confidentialTransferAndCall</span><span class="p">(</span><span class="kt">address</span> <span class="n">to</span><span class="p">,</span> <span class="kt">bytes32</span> <span class="n">amount</span><span class="p">,</span> <span class="kt">bytes</span> <span class="k">calldata</span> <span class="n">callData</span><span class="p">)</span> <span class="k">external</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">bytes32</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="confidentialtransferandcalladdressbytes32bytesbytes">
+      
+      
+        <a href="#confidentialtransferandcalladdressbytes32bytesbytes" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">confidentialTransferAndCall(address,bytes32,bytes,bytes)</code>
+      
+      
+    </h4>
+
+    <p>Transfers <code class="language-plaintext highlighter-rouge">amount</code> of tokens to address <code class="language-plaintext highlighter-rouge">to</code>. The function MAY revert if the caller’s balance does not have enough tokens to spend.</p>
+
+    <p>The <code class="language-plaintext highlighter-rouge">data</code> parameter contains implementation-specific information such as cryptographic proofs.</p>
+
+    <p>See <a href="#callback-details">Callback Details</a> below for details on the callback flow.</p>
+
+    <p>Returns the actual amount that was transferred.</p>
+
+    <p>MUST emit the <code class="language-plaintext highlighter-rouge">ConfidentialTransfer</code> event.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">confidentialTransferAndCall</span><span class="p">(</span><span class="kt">address</span> <span class="n">to</span><span class="p">,</span> <span class="kt">bytes32</span> <span class="n">amount</span><span class="p">,</span> <span class="kt">bytes</span> <span class="k">calldata</span> <span class="n">data</span><span class="p">,</span> <span class="kt">bytes</span> <span class="k">calldata</span> <span class="n">callData</span><span class="p">)</span> <span class="k">external</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">bytes32</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="confidentialtransferfromandcalladdressaddressbytes32bytes">
+      
+      
+        <a href="#confidentialtransferfromandcalladdressaddressbytes32bytes" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">confidentialTransferFromAndCall(address,address,bytes32,bytes)</code>
+      
+      
+    </h4>
+
+    <p>Transfers <code class="language-plaintext highlighter-rouge">amount</code> of tokens from address <code class="language-plaintext highlighter-rouge">from</code> to address <code class="language-plaintext highlighter-rouge">to</code>. The function MAY revert if the <code class="language-plaintext highlighter-rouge">from</code> account’s balance does not have enough tokens to spend.</p>
+
+    <p>See <a href="#callback-details">Callback Details</a> below for details on the callback flow.</p>
+
+    <p>Returns the actual amount that was transferred.</p>
+
+    <p>MUST revert if the caller is not an operator for <code class="language-plaintext highlighter-rouge">from</code>.</p>
+
+    <p>MUST emit the <code class="language-plaintext highlighter-rouge">ConfidentialTransfer</code> event.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">confidentialTransferFromAndCall</span><span class="p">(</span><span class="kt">address</span> <span class="n">from</span><span class="p">,</span> <span class="kt">address</span> <span class="n">to</span><span class="p">,</span> <span class="kt">bytes32</span> <span class="n">amount</span><span class="p">,</span> <span class="kt">bytes</span> <span class="k">calldata</span> <span class="n">callData</span><span class="p">)</span> <span class="k">external</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">bytes32</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="confidentialtransferfromandcalladdressaddressbytes32bytesbytes">
+      
+      
+        <a href="#confidentialtransferfromandcalladdressaddressbytes32bytesbytes" class="anchor-link"></a> <code class="language-plaintext highlighter-rouge">confidentialTransferFromAndCall(address,address,bytes32,bytes,bytes)</code>
+      
+      
+    </h4>
+
+    <p>Transfers <code class="language-plaintext highlighter-rouge">amount</code> of tokens from address <code class="language-plaintext highlighter-rouge">from</code> to address <code class="language-plaintext highlighter-rouge">to</code>. The function MAY revert if the <code class="language-plaintext highlighter-rouge">from</code> account’s balance does not have enough tokens to spend.</p>
+
+    <p>The <code class="language-plaintext highlighter-rouge">data</code> parameter contains implementation-specific information such as cryptographic proofs.</p>
+
+    <p>See <a href="#callback-details">Callback Details</a> below for details on the callback flow.</p>
+
+    <p>Returns the actual amount that was transferred.</p>
+
+    <p>MUST revert if the caller is not an operator for <code class="language-plaintext highlighter-rouge">from</code>.</p>
+
+    <p>MUST emit the <code class="language-plaintext highlighter-rouge">ConfidentialTransfer</code> event.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">confidentialTransferFromAndCall</span><span class="p">(</span><span class="kt">address</span> <span class="n">from</span><span class="p">,</span> <span class="kt">address</span> <span class="n">to</span><span class="p">,</span> <span class="kt">bytes32</span> <span class="n">amount</span><span class="p">,</span> <span class="kt">bytes</span> <span class="k">calldata</span> <span class="n">data</span><span class="p">,</span> <span class="kt">bytes</span> <span class="k">calldata</span> <span class="n">callData</span><span class="p">)</span> <span class="k">external</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">bytes32</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+</ul>
+  
+    <h3 id="events">
+      
+      
+        <a href="#events" class="anchor-link"></a> Events
+      
+      
+    </h3>
+
+<ul>
+  <li>
+  
+    <h4 id="confidentialtransfer">
+      
+      
+        <a href="#confidentialtransfer" class="anchor-link"></a> ConfidentialTransfer
+      
+      
+    </h4>
+
+    <p>MUST trigger when confidential tokens are transferred, including zero value transfers.</p>
+
+    <p>A token contract which creates new tokens SHOULD trigger a ConfidentialTransfer event with the <code class="language-plaintext highlighter-rouge">from</code> address set to <code class="language-plaintext highlighter-rouge">0x0</code> when tokens are created.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">event</span> <span class="n">ConfidentialTransfer</span><span class="p">(</span><span class="kt">address</span> <span class="k">indexed</span> <span class="n">from</span><span class="p">,</span> <span class="kt">address</span> <span class="k">indexed</span> <span class="n">to</span><span class="p">,</span> <span class="kt">bytes32</span> <span class="k">indexed</span> <span class="n">amount</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="operatorset">
+      
+      
+        <a href="#operatorset" class="anchor-link"></a> OperatorSet
+      
+      
+    </h4>
+
+    <p>MUST trigger on any successful call to <code class="language-plaintext highlighter-rouge">setOperator</code>.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">event</span> <span class="n">OperatorSet</span><span class="p">(</span><span class="kt">address</span> <span class="k">indexed</span> <span class="n">holder</span><span class="p">,</span> <span class="kt">address</span> <span class="k">indexed</span> <span class="n">operator</span><span class="p">,</span> <span class="kt">uint48</span> <span class="n">until</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+  
+    <h4 id="amountdisclosed">
+      
+      
+        <a href="#amountdisclosed" class="anchor-link"></a> AmountDisclosed
+      
+      
+    </h4>
+
+    <p>SHOULD trigger when a pointer amount is publicly disclosed through implementation-specific mechanisms.</p>
+
+    <div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">event</span> <span class="n">AmountDisclosed</span><span class="p">(</span><span class="kt">bytes32</span> <span class="k">indexed</span> <span class="n">handle</span><span class="p">,</span> <span class="kt">uint256</span> <span class="n">amount</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+</ul>
+  
+    <h3 id="callback-details">
+      
+      
+        <a href="#callback-details" class="anchor-link"></a> Callback Details
+      
+      
+    </h3>
+
+<p>Transfer functions suffixed with <code class="language-plaintext highlighter-rouge">AndCall</code> execute a callback to the <code class="language-plaintext highlighter-rouge">to</code> address AFTER all transfer logic is completed. The callback calls the <code class="language-plaintext highlighter-rouge">onConfidentialTransferReceived</code> function with the transfer initiator (operator), from address, actual amount sent, and given <code class="language-plaintext highlighter-rouge">callData</code> bytes (the last parameter for <code class="language-plaintext highlighter-rouge">AndCall</code> functions). The callback flow is as follows:</p>
+
+<ul>
+  <li>If <code class="language-plaintext highlighter-rouge">address(to).code.length == 0</code> the callback is a no-op and returns successfully.</li>
+  <li>Call <a href="#onconfidentialtransferreceived"><code class="language-plaintext highlighter-rouge">onConfidentialTransferReceived(address, address, bytes32, bytes)</code></a> on <code class="language-plaintext highlighter-rouge">to</code>.</li>
+  <li>If the function call reverts, revert.</li>
+  <li>If the function call returns the false boolean, attempt to transfer back the tokens to the original holder and return.</li>
+</ul>
+  
+    <h3 id="contract-receivers">
+      
+      
+        <a href="#contract-receivers" class="anchor-link"></a> Contract Receivers
+      
+      
+    </h3>
+
+<p>For a contract to receive a transfer with a callback, it MUST implement the <code class="language-plaintext highlighter-rouge">onConfidentialTransferReceived</code> function:</p>
+  
+    <h4 id="onconfidentialtransferreceived">
+      
+      
+        <a href="#onconfidentialtransferreceived" class="anchor-link"></a> onConfidentialTransferReceived
+      
+      
+    </h4>
+
+<p>If the callback is unsuccessful, the function SHOULD revert or return a pointer to the false boolean.</p>
+
+<p>The token will attempt to return tokens from the receiver to the sender if false is returned. Note that this reversal may fail if the receiver spends tokens as part of the callback.</p>
+
+<div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">onConfidentialTransferReceived</span><span class="p">(</span><span class="kt">address</span> <span class="n">operator</span><span class="p">,</span> <span class="kt">address</span> <span class="n">from</span><span class="p">,</span> <span class="kt">bytes32</span> <span class="n">amount</span><span class="p">,</span> <span class="kt">bytes</span> <span class="k">calldata</span> <span class="n">data</span><span class="p">)</span> <span class="k">external</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">bytes32</span> <span class="n">success</span><span class="p">);</span>
+</code></pre></div></div>
+  
+    <h2 id="rationale">
+      
+      
+        <a href="#rationale" class="anchor-link"></a> Rationale
+      
+      
+    </h2>
+  
+    <h3 id="technology-agnostic-design">
+      
+      
+        <a href="#technology-agnostic-design" class="anchor-link"></a> Technology Agnostic Design
+      
+      
+    </h3>
+
+<p>Using <code class="language-plaintext highlighter-rouge">bytes32</code> allows implementations using pointer based systems and privacy mechanisms including FHE systems, zero-knowledge proofs, secure enclaves, or future technologies to be compliant.</p>
+  
+    <h3 id="operator-model">
+      
+      
+        <a href="#operator-model" class="anchor-link"></a> Operator Model
+      
+      
+    </h3>
+
+<p>Time-limited operators provide granular control while enabling DeFi protocol integration and natural permission expiration. This approach reduces the load on the external system by removing the need to track approval amounts.</p>
+  
+    <h3 id="data-parameter">
+      
+      
+        <a href="#data-parameter" class="anchor-link"></a> Data Parameter
+      
+      
+    </h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">bytes calldata data</code> parameter in transfer functions allows implementations to include cryptographic proofs, access permissions, or other privacy-mechanism-specific information.</p>
+  
+    <h2 id="security-considerations">
+      
+      
+        <a href="#security-considerations" class="anchor-link"></a> Security Considerations
+      
+      
+    </h2>
+
+<p>Security depends on the underlying pointer based mechanism. Implementations must guard against side-channel attacks and ensure proper key management for offchain operations.</p>
+
+<p>Token callbacks are associated with inherent security risks, including reentrancy and gas griefing. When utilizing callbacks, consider using reentrancy protection and setting a gas limit.</p>
+  
+    <h2 id="copyright">
+      
+      
+        <a href="#copyright" class="anchor-link"></a> Copyright
+      
+      
+    </h2>
+
+<p>Copyright and related rights waived via <a href="/LICENSE">CC0</a>.</p>
+
+  <h2>Citation</h2>
+  <p>Please cite this document as:</p>
+  
+  <p>Aryeh Greenberg&nbsp;(<a href="https://github.com/arr00">@arr00</a>), Ernesto García&nbsp;(<a href="https://github.com/ernestognw">@ernestognw</a>), Hadrien Croubois&nbsp;(<a href="https://github.com/Amxx">@Amxx</a>), Ghazi Ben Amor&nbsp;(<a href="https://github.com/GBAZama">@GBAZama</a>), Clement Danjou&nbsp;(<a href="https://github.com/immortal-tofu">@immortal-tofu</a>), Joseph Andre Turk&nbsp;(<a href="https://github.com/jatZama">@jatZama</a>), Silas Davis&nbsp;(<a href="https://github.com/silasdavis">@silasdavis</a>), Nicolas Pasquier&nbsp;(<a href="https://github.com/npasquie">@npasquie</a>), "ERC-7984: Confidential Fungible Token [DRAFT]," <em>Ethereum Improvement Proposals</em>, no. 7984, July 2025. Available: https://eips.ethereum.org/EIPS/eip-7984.</p>
+</div>
+
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "TechArticle",
+    "headline": "ERC-7984: Confidential Fungible Token [DRAFT]",
+    "name": "ERC-7984: Confidential Fungible Token [DRAFT]",
+    "author": "Aryeh Greenberg (@arr00), Ernesto García (@ernestognw), Hadrien Croubois (@Amxx), Ghazi Ben Amor (@GBAZama), Clement Danjou (@immortal-tofu), Joseph Andre Turk (@jatZama), Silas Davis (@silasdavis), Nicolas Pasquier (@npasquie)",
+    "dateCreated": "2025-07-03",
+    "datePublished": "2025-07-03",
+    
+    "discussionUrl": "https://ethereum-magicians.org/t/erc-7984-confidential-fungible-token-interface/24735",
+    
+    "inLanguage": "en-US",
+    "license": "#copyright",
+    "copyrightYear": "2025"
+  }
+</script>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Ethereum Improvement Proposals</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Ethereum Improvement Proposals</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/ethereum/EIPs"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">ethereum/EIPs</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Ethereum Improvement Proposals (EIPs) describe standards for the Ethereum platform, such as core protocol specifications.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

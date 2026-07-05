@@ -1,0 +1,107 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "deployer": "0xF505e2E71df58D7244189072008f25f6b6aaE5ae",
+  "oracle": "0x0883620ac3cbfe3ff28efb52Ee2998418AAc8495",
+  "chainlinkEthUsd": "0x694AA1769357215DE4FAC081bf1f309aDC325306",
+  "registry": "0x2f0750Bbb0A246059d80e94c454586a7F27a128e",
+  "registryEnforced": false,
+  "pool": "0x854E0b51e5b7F13386fFea353CF6275C4EE16B47",
+  "markets": {
+    "0": {
+      "name": "cWETH → cUSDC",
+      "collateral": "0x46208622DA27d91db4f0393733C8BA082ed83158",
+      "debt": "0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639",
+      "lltvBps": 8000
+    },
+    "1": {
+      "name": "cUSDC → cWETH",
+      "collateral": "0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639",
+      "debt": "0x46208622DA27d91db4f0393733C8BA082ed83158",
+      "lltvBps": 8000
+    },
+    "2": {
+      "name": "csteakcUSDC → cUSDC (vault)",
+      "collateral": "0x09959630F67a6b8818b464487877DbDd6f4B14aE",
+      "debt": "0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639",
+      "lltvBps": 9000,
+      "vault": "0x7B560a3EFD4568Ea92f77963125F1C350bc65547"
+    }
+  },
+  "tokens": {
+    "cUSDC": "0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639",
+    "cWETH": "0x46208622DA27d91db4f0393733C8BA082ed83158",
+    "usdcUnderlying": "0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF",
+    "wethUnderlying": "0xff54739b16576FA5402F211D0b938469Ab9A5f3F",
+    "cSHARE": "0x09959630F67a6b8818b464487877DbDd6f4B14aE"
+  },
+  "market2": {
+    "vault": "0x7B560a3EFD4568Ea92f77963125F1C350bc65547",
+    "cSHARE": "0x09959630F67a6b8818b464487877DbDd6f4B14aE",
+    "depositBatcher": "0x0f425d953C7808DC7E1cD4D9Fa4c0e5faCaF5567",
+    "withdrawBatcher": "0x541979A755C4c31E828E9B9B6A2fD1b51845c5D3"
+  },
+  "ghostGate": "0xE90c95e8d3D82D3Ba5d309a3a9BE7575478dCaBC",
+  "constructorArgs": {
+    "MockYieldVault": [
+      "0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF"
+    ],
+    "ConfidentialShareWrapper": [
+      "0x7B560a3EFD4568Ea92f77963125F1C350bc65547"
+    ],
+    "GhostLendPool": [
+      "0x0883620ac3cbfe3ff28efb52Ee2998418AAc8495",
+      "0x0000000000000000000000000000000000000000",
+      [
+        [
+          "0x46208622DA27d91db4f0393733C8BA082ed83158",
+          "0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639",
+          true,
+          false,
+          8000,
+          500,
+          1000,
+          "0x0000000000000000000000000000000000000000"
+        ],
+        [
+          "0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639",
+          "0x46208622DA27d91db4f0393733C8BA082ed83158",
+          false,
+          true,
+          8000,
+          500,
+          1000,
+          "0x0000000000000000000000000000000000000000"
+        ],
+        [
+          "0x09959630F67a6b8818b464487877DbDd6f4B14aE",
+          "0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639",
+          false,
+          false,
+          9000,
+          500,
+          1000,
+          "0x7B560a3EFD4568Ea92f77963125F1C350bc65547"
+        ]
+      ]
+    ],
+    "DepositBatcher": [
+      "0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639",
+      "0x09959630F67a6b8818b464487877DbDd6f4B14aE",
+      "0x7B560a3EFD4568Ea92f77963125F1C350bc65547",
+      60
+    ],
+    "WithdrawBatcher": [
+      "0x09959630F67a6b8818b464487877DbDd6f4B14aE",
+      "0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639",
+      "0x7B560a3EFD4568Ea92f77963125F1C350bc65547",
+      60
+    ],
+    "GhostGate": [
+      "0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639",
+      "0x09959630F67a6b8818b464487877DbDd6f4B14aE",
+      "0x7B560a3EFD4568Ea92f77963125F1C350bc65547",
+      60
+    ]
+  }
+}

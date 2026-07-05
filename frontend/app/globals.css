@@ -1,0 +1,21 @@
+/* Design system copied verbatim from GhostLend.dc.html (visual source of truth). */
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg:#f4f3f1; --surface:#ffffff; --surface-2:#faf9f6; --panel:#171512;
+  --ink:#1a1815; --ink-2:#615d54; --ink-3:#9a958a; --line:#eae7df; --line-2:#ddd9cf;
+  --accent:#ffd208; --accent-soft:#fff3bd;
+  --green:#1c8f5a; --green-bg:#e7f4ec; --amber:#c68a00; --red:#d13c3c; --red-bg:#fbecec;
+  --display:'Archivo',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--display);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button{font-family:inherit}
+input{font-family:inherit}
+a{color:inherit}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes beat{0%,100%{box-shadow:0 0 0 0 rgba(28,143,90,.35)}50%{box-shadow:0 0 0 6px rgba(28,143,90,0)}}
+@keyframes blurin{from{filter:blur(8px);opacity:.25}to{filter:blur(0);opacity:1}}
+@keyframes toastin{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}

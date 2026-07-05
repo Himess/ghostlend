@@ -1,0 +1,201 @@
+> For the complete documentation index, see [llms.txt](https://docs.zama.org/protocol/llms.txt). Markdown versions of documentation pages are available by appending `.md` to page URLs; this page is available as [Markdown](https://docs.zama.org/protocol/sdk/guides/node-js-backend.md).
+
+# Node.js backend
+
+The SDK works in Node.js with the same API as in the browser. The main differences are the relayer (native worker threads instead of Web Workers) and storage isolation for concurrent requests.
+
+## Steps
+
+### 1. Install packages
+
+```bash
+npm install @zama-fhe/sdk viem
+```
+
+### 2. Create the config with a `node()` relayer
+
+The `node()` relayer uses native `worker_threads` for FHE operations. Pass `poolSize` to control parallelism (default: `min(CPU cores, 4)`).
+
+```ts
+import { createConfig } from "@zama-fhe/sdk/viem";
+import { ZamaSDK, memoryStorage } from "@zama-fhe/sdk";
+import { node } from "@zama-fhe/sdk/node";
+import { sepolia, type FheChain } from "@zama-fhe/sdk/chains";
+import { createPublicClient, createWalletClient, http } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { sepolia as sepoliaViem } from "viem/chains";
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
+const publicClient = createPublicClient({ chain: sepoliaViem, transport: http() });
+const walletClient = createWalletClient({
+  account,
+  chain: sepoliaViem,
+  transport: http(),
+});
+
+const mySepolia = {
+  ...sepolia,
+  network: "https://sepolia.infura.io/v3/YOUR_KEY",
+  auth: { __type: "ApiKeyHeader" as const, value: process.env.RELAYER_API_KEY! },
+} as const satisfies FheChain;
+
+const config = createConfig({
+  chains: [mySepolia],
+  publicClient,
+  walletClient,
+  storage: memoryStorage,
+  relayers: {
+    [mySepolia.id]: node({ poolSize: 4 }),
+  },
+});
+
+const sdk = new ZamaSDK(config);
+```
+
+### 3. Choose a storage backend
+
+For scripts and single-user CLIs, `memoryStorage` is the simplest option (shown above).
+
+For servers handling multiple users concurrently, use `asyncLocalStorage` instead — see the next step.
+
+### 4. Isolate per-request state with `asyncLocalStorage`
+
+On a server where each HTTP request belongs to a different user, you need per-request transport key pair isolation. `asyncLocalStorage` wraps Node.js [`AsyncLocalStorage`](https://nodejs.org/api/async_context.html) to scope storage to the current async context.
+
+```ts
+import { asyncLocalStorage } from "@zama-fhe/sdk/node";
+import express from "express";
+
+const app = express();
+
+app.post("/api/transfer", (req, res) => {
+  asyncLocalStorage.run(async () => {
+    // Everything inside this callback has its own isolated storage
+    const config = createConfig({
+      chains: [mySepolia],
+      publicClient,
+      walletClient,
+      storage: asyncLocalStorage,
+      relayers: {
+        [mySepolia.id]: node(),
+      },
+    });
+    const sdk = new ZamaSDK(config);
+    const token = sdk.createToken("0xTokenAddress");
+    await token.confidentialTransfer("0xRecipient", 100n);
+    res.json({ ok: true });
+  });
+});
+```
+
+Each call to `asyncLocalStorage.run()` creates a fresh storage scope. Concurrent requests never share transport key pair state.
+
+### 5. Create tokens and operate
+
+The token API is identical to the browser SDK:
+
+```ts
+const wrappedToken = sdk.createWrappedToken("0xWrappedEncryptedERC20");
+
+// Shield public tokens into their encrypted form
+await wrappedToken.shield(1000n);
+
+// Transfer confidentially
+await wrappedToken.confidentialTransfer("0xRecipient", 500n);
+
+// Decrypt a balance
+const balance = await wrappedToken.balanceOf(account.address);
+```
+
+See the [Token Operations](/protocol/sdk/api-references/sdk/token.md) reference for the full API.
+
+### 6. Use direct API key auth
+
+In a server environment, you can authenticate with the relayer directly — there is no browser to leak the key to. Pass `auth` on the chain definition:
+
+```ts
+import { sepolia, type FheChain } from "@zama-fhe/sdk/chains";
+
+const mySepolia = {
+  ...sepolia,
+  network: "https://sepolia.infura.io/v3/YOUR_KEY",
+  auth: { __type: "ApiKeyHeader" as const, value: process.env.RELAYER_API_KEY! },
+} as const satisfies FheChain;
+```
+
+The `auth` field supports three modes. For the **Zama-hosted relayer, use `ApiKeyHeader`** — it's the only mode the hosted endpoint accepts. `BearerToken` and `ApiKeyCookie` are for self-hosted relayers or proxied setups where you control the auth layer (see the [Authentication guide](/protocol/sdk/guides/authentication.md)).
+
+| Mode           | Shape                                            | Use it when                                  |
+| -------------- | ------------------------------------------------ | -------------------------------------------- |
+| API key header | `{ __type: "ApiKeyHeader", value: "your-key" }`  | Zama-hosted relayer (required), or default   |
+| API key cookie | `{ __type: "ApiKeyCookie", value: "your-key" }`  | Behind your own proxy (SDK→proxy hop)        |
+| Bearer token   | `{ __type: "BearerToken", token: "your-token" }` | Self-hosted relayer with a bearer auth layer |
+
+### 7. Clean up on shutdown
+
+Terminate the worker pool when your process exits:
+
+```ts
+process.on("SIGTERM", () => {
+  sdk.terminate();
+});
+```
+
+### 8. (Optional) Use a custom signer
+
+If you are using a transaction relayer (e.g. OpenZeppelin Defender) instead of a local wallet, implement the [GenericSigner](/protocol/sdk/api-references/sdk/genericsigner.md) and [GenericProvider](/protocol/sdk/api-references/sdk/genericprovider.md) interfaces and use the generic `createConfig` from `@zama-fhe/sdk`:
+
+```ts
+import { createConfig, ZamaSDK, memoryStorage } from "@zama-fhe/sdk";
+import { node } from "@zama-fhe/sdk/node";
+import { sepolia, type FheChain } from "@zama-fhe/sdk/chains";
+
+const mySepolia = {
+  ...sepolia,
+  network: "https://sepolia.infura.io/v3/YOUR_KEY",
+  auth: { __type: "ApiKeyHeader" as const, value: process.env.RELAYER_API_KEY! },
+} as const satisfies FheChain;
+
+const config = createConfig({
+  chains: [mySepolia],
+  signer: myRelayerSigner, // GenericSigner backed by your relayer
+  provider: myRpcProvider, // GenericProvider backed by an RPC client
+  storage: memoryStorage,
+  relayers: {
+    [mySepolia.id]: node({ poolSize: 4 }),
+  },
+});
+
+const sdk = new ZamaSDK(config);
+```
+
+The signer handles `signTypedData` and `writeContract`; the provider handles `readContract`, `waitForTransactionReceipt`, `getChainId`, and `getBlockTimestamp`. See [GenericSigner](/protocol/sdk/api-references/sdk/genericsigner.md) for the full interface.
+
+## Next steps
+
+* [RelayerNode](/protocol/sdk/api-references/sdk/relayernode.md) -- `node()` transport factory options
+* [asyncLocalStorage](/protocol/sdk/api-references/sdk/genericstorage.md) -- the `GenericStorage` interface it implements
+* [Configuration](/protocol/sdk/guides/configuration.md) -- chains, relayers, authentication, and permit management
+* [GenericSigner](/protocol/sdk/api-references/sdk/genericsigner.md) -- custom signer interface for non-standard wallet integrations
+
+
+---
+
+# Agent Instructions
+This documentation is published with GitBook. GitBook is the documentation platform designed so that both humans and AI agents can read, navigate, and reason over technical content effectively. Learn more at gitbook.com.
+
+## Querying This Documentation
+If you need additional information that is not directly available in this page, you can query the documentation dynamically by asking a question.
+
+Perform an HTTP GET request on the current page URL with the `ask` query parameter, and the optional `goal` query parameter:
+
+```
+GET https://docs.zama.org/protocol/sdk/guides/node-js-backend.md?ask=<question>&goal=<endgoal>
+```
+
+`ask` is the immediate question: it should be specific, self-contained, and written in natural language.
+`goal` is optional and describes the broader end goal you are ultimately trying to accomplish on behalf of the user. GitBook uses it to tailor the answer towards what is most useful for that goal.
+
+The response will contain a direct answer to the question and relevant excerpts and sources from the documentation.
+
+Use this mechanism when the answer is not explicitly present in the current page, you need clarification or additional context, or you want to retrieve related documentation sections.

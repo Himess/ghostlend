@@ -1,0 +1,55 @@
+# GhostLend — Sepolia production addresses (CP6)
+
+**Network:** Ethereum Sepolia (chainId 11155111) · **Deployer:** `0xF505e2E71df58D7244189072008f25f6b6aaE5ae`
+**Deployed:** 2026-07-05 · machine-readable source: [`deployments/sepolia.json`](./sepolia.json)
+
+## Core protocol
+| Contract | Address | Notes |
+|---|---|---|
+| **GhostLendPool** | [`0x854E0b51e5b7F13386fFea353CF6275C4EE16B47`](https://sepolia.etherscan.io/address/0x854E0b51e5b7F13386fFea353CF6275C4EE16B47) | 3 isolated markets (M0/M1/M2) |
+| **OracleAdapter** | [`0x0883620ac3cbfe3ff28efb52Ee2998418AAc8495`](https://sepolia.etherscan.io/address/0x0883620ac3cbfe3ff28efb52Ee2998418AAc8495) | wraps Chainlink ETH/USD (reused) |
+| Chainlink ETH/USD | [`0x694AA1769357215DE4FAC081bf1f309aDC325306`](https://sepolia.etherscan.io/address/0x694AA1769357215DE4FAC081bf1f309aDC325306) | canonical Sepolia feed |
+
+## Markets (in the pool above)
+| id | collateral → debt | LLTV | pricing |
+|---|---|---|---|
+| **0** | cWETH → cUSDC | 80% | Chainlink ETH/USD |
+| **1** | cUSDC → cWETH | 80% | Chainlink ETH/USD |
+| **2** | csteakcUSDC → cUSDC | 90% | vault share price (swap-free leverage) |
+
+## Market 2 vault stack + GhostGate
+| Contract | Address |
+|---|---|
+| **MockYieldVault** (ERC-4626, gYVS) | [`0x7B560a3EFD4568Ea92f77963125F1C350bc65547`](https://sepolia.etherscan.io/address/0x7B560a3EFD4568Ea92f77963125F1C350bc65547) |
+| **csteakcUSDC** (ConfidentialShareWrapper) | [`0x09959630F67a6b8818b464487877DbDd6f4B14aE`](https://sepolia.etherscan.io/address/0x09959630F67a6b8818b464487877DbDd6f4B14aE) |
+| **DepositBatcher** (cUSDC→vault→cSHARE) | [`0x0f425d953C7808DC7E1cD4D9Fa4c0e5faCaF5567`](https://sepolia.etherscan.io/address/0x0f425d953C7808DC7E1cD4D9Fa4c0e5faCaF5567) |
+| **WithdrawBatcher** (cSHARE→vault→cUSDC) | [`0x541979A755C4c31E828E9B9B6A2fD1b51845c5D3`](https://sepolia.etherscan.io/address/0x541979A755C4c31E828E9B9B6A2fD1b51845c5D3) |
+| **GhostGate** (netting gateway) | [`0xE90c95e8d3D82D3Ba5d309a3a9BE7575478dCaBC`](https://sepolia.etherscan.io/address/0xE90c95e8d3D82D3Ba5d309a3a9BE7575478dCaBC) |
+
+## Tokens (reused live Zama wrappers)
+| Token | Wrapper | Underlying (public mint) |
+|---|---|---|
+| **cUSDC** (6 dec) | [`0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639`](https://sepolia.etherscan.io/address/0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639) | USDC `0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF` |
+| **cWETH** (6 dec, rate 1e12) | [`0x46208622DA27d91db4f0393733C8BA082ed83158`](https://sepolia.etherscan.io/address/0x46208622DA27d91db4f0393733C8BA082ed83158) | WETH `0xff54739b16576FA5402F211D0b938469Ab9A5f3F` |
+
+## Etherscan verification
+Requires an Etherscan API key: `npx hardhat vars set ETHERSCAN_API_KEY <key>`. Then:
+```bash
+# simple single-arg contracts
+npx hardhat verify --network sepolia 0x7B560a3EFD4568Ea92f77963125F1C350bc65547 0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF   # MockYieldVault
+npx hardhat verify --network sepolia 0x09959630F67a6b8818b464487877DbDd6f4B14aE 0x7B560a3EFD4568Ea92f77963125F1C350bc65547   # csteakcUSDC
+npx hardhat verify --network sepolia 0x0f425d953C7808DC7E1cD4D9Fa4c0e5faCaF5567 0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639 0x09959630F67a6b8818b464487877DbDd6f4B14aE 0x7B560a3EFD4568Ea92f77963125F1C350bc65547 60   # DepositBatcher
+npx hardhat verify --network sepolia 0x541979A755C4c31E828E9B9B6A2fD1b51845c5D3 0x09959630F67a6b8818b464487877DbDd6f4B14aE 0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639 0x7B560a3EFD4568Ea92f77963125F1C350bc65547 60   # WithdrawBatcher
+npx hardhat verify --network sepolia 0xE90c95e8d3D82D3Ba5d309a3a9BE7575478dCaBC 0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639 0x09959630F67a6b8818b464487877DbDd6f4B14aE 0x7B560a3EFD4568Ea92f77963125F1C350bc65547 60   # GhostGate
+# complex constructor args (pool: struct[] ; oracle): use the args module
+npx hardhat verify --network sepolia --constructor-args deployments/verify-pool.js 0x854E0b51e5b7F13386fFea353CF6275C4EE16B47   # GhostLendPool
+npx hardhat verify --network sepolia 0x0883620ac3cbfe3ff28efb52Ee2998418AAc8495 0x694AA1769357215DE4FAC081bf1f309aDC325306   # OracleAdapter
+```
+One-shot: `npm run verify:all` (see package.json).
+
+## Deviation (flagged)
+- **Registry validation OFF for this pool.** The core pool (`0x9631…2D64`, M0/M1 only) was deployed with the
+  Zama wrapper registry ON. Market 2 needs **csteakcUSDC** as collateral, a fresh `ConfidentialShareWrapper`
+  that is **not** in the registry, so this production pool is constructed with `registry = address(0)`
+  (validation skipped). The tokens are still real ERC-7984 wrappers; only the on-chain registry gate is
+  bypassed. The legacy registry-on core pool remains live for reference.

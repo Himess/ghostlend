@@ -1,0 +1,47 @@
+{
+  "network": "sepolia",
+  "scene": {
+    "D1": "700000",
+    "D2": "800000",
+    "W_USDC": "1000000"
+  },
+  "vault": "0xA46D474E8Efc22154ad73169d09b283665AF3CC8",
+  "cUSDC": "0x80185Eb1aeA496fa4CAB5359797006F55E48257A",
+  "cSHARE": "0xd0328E96d0ee98aa26aa42708d529Ed3ff495d66",
+  "vanilla": {
+    "depositBatcher": "0xb4E18C79465272cDbCaE3529049277cB8AfE881a",
+    "withdrawBatcher": "0x673F43a9f865100D1dA06999C44B2b7244F4b3e3",
+    "tx": {
+      "aliceDeposit": "0x1bd9a5c164b1d2bc2963fb0097bad14535337093eb2e5b15e95f779a0b98a901",
+      "bobDeposit": "0xc9b06c5262c155d8e4da459ca9460ded626092ffa3d1b396de43e9cc80726407",
+      "carolWithdraw": "0x26bfd08884914cb70a2c0e0008b86e20282d83bc38225358620aed822f975cc5",
+      "depDispatch": "0x10f68ea3fa620d6ab9ff71a6eabd8f9c9b96aeabfd11510e89d44843dfd3242c",
+      "depCallback": "0x138e23ed3eee67264a88a0129469665b046934bfed37e2f24d0ce6002b2bb9a8",
+      "wdrDispatch": "0xa4108344f0d5573416f896926101e0a498f94b7842b97b85dc91e56eeb4d4fca",
+      "wdrCallback": "0xf65c0fbdddce83f6f6a99b0c8b39cc87edbe48569ed78b4a744b0cc983cb6342"
+    },
+    "crossings": 2,
+    "grossVolume": "2500000"
+  },
+  "ghostgate": {
+    "address": "0xd1ea58aA0E5F9E5744A7906E1065B55a7833b16A",
+    "pin": "1000000",
+    "tx": {
+      "aliceDeposit": "0x62cb5b4efa979ec171c02cddd3eb1f2f325c833244787a02491494446f7ae433",
+      "bobDeposit": "0xe4ff875d3c4818955473715382d210c83045e673a346fd15085e3a4ece70e137",
+      "carolWithdraw": "0x75f5192dd0e4e77c74b5a5726c90e1ded3e469d7024d16b38e3251e0988643ff",
+      "dispatch": "0x9fd870715995927526a33f551d14a9d9366989145899265a51ba157c4acbd9b1",
+      "finalize": "0x054be31f6d8b839238b4a59b891375c4c2675388437afe5c453d03a93080ade9",
+      "route": "0xbe5e799eccd9f11b9ce13ead13fa5cd17ca921173f8a139b33134a3f1cb9e3de",
+      "aliceClaim": "0x03c3cad2a95b490d60713045f4ca4283974d8390886143b6c000f072faec3d1e",
+      "bobClaim": "0x161bf9da1b63b0694538482793a584e98f9a04e246e0947735e7caa3e0bc17ee",
+      "carolClaim": "0xea9212a0c9ca18caca6e62766162fd063ad8a1a72a7409390ca498df8d353cc4"
+    },
+    "crossings": 1,
+    "netVolume": "500000"
+  },
+  "verdict": {
+    "hiddenVolume": "2000000",
+    "pctReduction": 80
+  }
+}
