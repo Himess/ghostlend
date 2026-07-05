@@ -6,7 +6,7 @@
   "chainlinkEthUsd": "0x694AA1769357215DE4FAC081bf1f309aDC325306",
   "registry": "0x2f0750Bbb0A246059d80e94c454586a7F27a128e",
   "registryEnforced": false,
-  "pool": "0x854E0b51e5b7F13386fFea353CF6275C4EE16B47",
+  "pool": "0x1A887cb0dB1438e8f4597BBf4E8369e4C9146E14",
   "markets": {
     "0": {
       "name": "cWETH → cUSDC",
@@ -103,5 +103,6 @@
       "0x7B560a3EFD4568Ea92f77963125F1C350bc65547",
       60
     ]
-  }
+  },
+  "previousPool": "0x10420DB1F28A9127dAAF7A54A0fc62133eD6aBf3"
 }

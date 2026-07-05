@@ -21,7 +21,7 @@ async function finalizeFromLog(pool: any, marketId: number, epochId: number): Pr
   const filter = pool.filters.EpochClosed(marketId, epochId);
   const latest = await pool.runner.provider.getBlockNumber();
   // small recent window only — the public RPC rejects deep getLogs as "archive" requests.
-  const logs = await pool.queryFilter(filter, Math.max(0, latest - 500), latest);
+  const logs = await pool.queryFilter(filter, Math.max(0, latest - 30), latest);
   if (logs.length === 0) return false;
   const ev: any = logs[logs.length - 1];
   const pub = await fhevm.publicDecrypt([ev.args.supplySnap, ev.args.borrowSnap]); // ~3s (PROBE P6)

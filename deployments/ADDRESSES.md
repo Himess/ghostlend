@@ -6,7 +6,7 @@
 ## Core protocol
 | Contract | Address | Notes |
 |---|---|---|
-| **GhostLendPool** | [`0x854E0b51e5b7F13386fFea353CF6275C4EE16B47`](https://sepolia.etherscan.io/address/0x854E0b51e5b7F13386fFea353CF6275C4EE16B47) | 3 isolated markets (M0/M1/M2) |
+| **GhostLendPool** | [`0x1A887cb0dB1438e8f4597BBf4E8369e4C9146E14`](https://sepolia.etherscan.io/address/0x1A887cb0dB1438e8f4597BBf4E8369e4C9146E14) | 3 isolated markets (M0/M1/M2) |
 | **OracleAdapter** | [`0x0883620ac3cbfe3ff28efb52Ee2998418AAc8495`](https://sepolia.etherscan.io/address/0x0883620ac3cbfe3ff28efb52Ee2998418AAc8495) | wraps Chainlink ETH/USD (reused) |
 | Chainlink ETH/USD | [`0x694AA1769357215DE4FAC081bf1f309aDC325306`](https://sepolia.etherscan.io/address/0x694AA1769357215DE4FAC081bf1f309aDC325306) | canonical Sepolia feed |
 
@@ -42,7 +42,7 @@ npx hardhat verify --network sepolia 0x0f425d953C7808DC7E1cD4D9Fa4c0e5faCaF5567 
 npx hardhat verify --network sepolia 0x541979A755C4c31E828E9B9B6A2fD1b51845c5D3 0x09959630F67a6b8818b464487877DbDd6f4B14aE 0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639 0x7B560a3EFD4568Ea92f77963125F1C350bc65547 60   # WithdrawBatcher
 npx hardhat verify --network sepolia 0xE90c95e8d3D82D3Ba5d309a3a9BE7575478dCaBC 0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639 0x09959630F67a6b8818b464487877DbDd6f4B14aE 0x7B560a3EFD4568Ea92f77963125F1C350bc65547 60   # GhostGate
 # complex constructor args (pool: struct[] ; oracle): use the args module
-npx hardhat verify --network sepolia --constructor-args deployments/verify-pool.js 0x854E0b51e5b7F13386fFea353CF6275C4EE16B47   # GhostLendPool
+npx hardhat verify --network sepolia --constructor-args deployments/verify-pool.js 0x1A887cb0dB1438e8f4597BBf4E8369e4C9146E14   # GhostLendPool
 npx hardhat verify --network sepolia 0x0883620ac3cbfe3ff28efb52Ee2998418AAc8495 0x694AA1769357215DE4FAC081bf1f309aDC325306   # OracleAdapter
 ```
 One-shot: `npm run verify:all` (see package.json).
