@@ -51,9 +51,9 @@ const config: HardhatUserConfig = {
     deployer: 0,
   },
   etherscan: {
-    apiKey: {
-      sepolia: vars.get("ETHERSCAN_API_KEY", ""),
-    },
+    // Single-key string → hardhat-verify uses the Etherscan API **V2** multichain endpoint
+    // (the per-network object form targets the deprecated V1 API).
+    apiKey: vars.get("ETHERSCAN_API_KEY", ""),
   },
   gasReporter: {
     currency: "USD",

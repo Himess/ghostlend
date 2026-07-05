@@ -32,7 +32,7 @@
 | **cUSDC** (6 dec) | [`0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639`](https://sepolia.etherscan.io/address/0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639) | USDC `0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF` |
 | **cWETH** (6 dec, rate 1e12) | [`0x46208622DA27d91db4f0393733C8BA082ed83158`](https://sepolia.etherscan.io/address/0x46208622DA27d91db4f0393733C8BA082ed83158) | WETH `0xff54739b16576FA5402F211D0b938469Ab9A5f3F` |
 
-## Etherscan verification
+## Etherscan verification — ✅ ALL 7 VERIFIED (Etherscan API V2)
 Requires an Etherscan API key: `npx hardhat vars set ETHERSCAN_API_KEY <key>`. Then:
 ```bash
 # simple single-arg contracts
