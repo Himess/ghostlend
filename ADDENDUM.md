@@ -1,10 +1,8 @@
 # GhostLend — ARCHITECTURE ADDENDUM v1.1
 ## Probe-locked constants + Market 2 (Confidential Vault stack) + GhostGate netting + Swap lane
 
-> Companion to `ARCHITECTURE.md` v1.0 — read that first; this file amends it. PROBE-RESULTS.md is now
-> the authority for all live-Sepolia behavior. **Place ARCHITECTURE.md, this file, PROBE-RESULTS.md and
-> `zama-docs/` in the repo root before implementation** (the probe run noted ARCHITECTURE.md was missing
-> from the working directory).
+> Companion to `ARCHITECTURE.md` v1.0 — read that first; this file amends it with the probe-locked
+> constants and the Market 2 (Confidential Vault stack) + GhostGate design.
 
 ---
 

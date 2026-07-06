@@ -4,6 +4,9 @@ Isolated-market lending where per-user balances are encrypted (`euint64`) and on
 liquidation bit are ever revealed. Built on FHEVM `@fhevm/solidity` 0.11.1 + OpenZeppelin
 confidential-contracts 0.5.1 (ERC-7984), Chainlink ETH/USD, fhevm-hardhat-template.
 
+**▶ Live demo: https://ghostlend.vercel.app** — connect a Sepolia wallet and decrypt your own positions.
+All 7 contracts are Etherscan-verified; addresses in [`deployments/ADDRESSES.md`](./deployments/ADDRESSES.md).
+
 ## Three pillars
 1. **Native confidential lending** — isolated markets (cWETH↔cUSDC) with encrypted supplied/collateral/debt;
    public rates & utilization per epoch, private positions, one-bit liquidation.
@@ -28,7 +31,7 @@ confidential-contracts 0.5.1 (ERC-7984), Chainlink ETH/USD, fhevm-hardhat-templa
   without encrypted division, at the cost of an exact-rate drift guard. 
 
 ## Deployed (Sepolia) — full production set in [`deployments/ADDRESSES.md`](./deployments/ADDRESSES.md)
-- **GhostLendPool** (M0/M1/M2) `0x854E0b51e5b7F13386fFea353CF6275C4EE16B47`
+- **GhostLendPool** (M0/M1/M2) `0x1A887cb0dB1438e8f4597BBf4E8369e4C9146E14`
 - **OracleAdapter** (Chainlink ETH/USD) `0x0883620ac3cbfe3ff28efb52Ee2998418AAc8495`
 - **GhostGate** `0xE90c95e8d3D82D3Ba5d309a3a9BE7575478dCaBC` · **MockYieldVault** `0x7B560a…65547` ·
   **csteakcUSDC** `0x099596…14aE` · DepositBatcher `0x0f425d…5567` · WithdrawBatcher `0x541979…c5D3`
@@ -37,8 +40,9 @@ confidential-contracts 0.5.1 (ERC-7984), Chainlink ETH/USD, fhevm-hardhat-templa
 - The legacy registry-on core pool `0x9631…2D64` (M0/M1 only) remains live for reference.
 
 ## Frontend
-A Next.js app (`frontend/`) ports the 8-screen design shell wired to the live Sepolia contracts via
-`@zama-fhe/sdk` v3 + wagmi/viem. `cd frontend && npm install && npm run dev`. See `CP6-STATUS.md`.
+Live at **https://ghostlend.vercel.app**. A Next.js app (`frontend/`) ports the design shell (9 screens incl.
+a Balances tab) wired to the live Sepolia contracts via `@zama-fhe/sdk` v3 + wagmi/viem. Run locally:
+`cd frontend && npm install && npm run dev`.
 
 ## What is hidden vs public
 - **Encrypted** (`euint64`, per user): supplied principal, collateral, debt, the per-op error flag.
@@ -57,10 +61,10 @@ A Next.js app (`frontend/`) ports the 8-screen design shell wired to the live Se
 ## Develop
 ```
 npm install
-npm test                      # mock suites (CP1 + CP2): 15 passing
+npm test                      # mock FHEVM suites: 27 passing
 npm run test:sepolia -- test/GhostLendSepolia.ts   # live smoke test
 npx hardhat run scripts/deploy-core.ts --network sepolia
-npx hardhat run scripts/keeper.ts --network sepolia   # epoch + liquidation keeper (skeleton)
+KEEPER_LOOP=1 npx hardhat run scripts/keeper.ts --network sepolia   # epoch + liquidation + GhostGate keeper (self-healing loop)
 ```
 
 ## Threat model & known limits (Market 2 / batchers)
@@ -106,6 +110,32 @@ asserted by the reveal-surface test). Only the *net* flow ever crosses the confi
   low-cardinality granularity, e.g. round `net` to buckets) rather than revealing totals or awaiting
   euint/euint division — noted as future work, out of scope for this checkpoint.
 
-Design of record: `ARCHITECTURE.md` (v1.0 + amendment notes) + `ADDENDUM.md` (v1.1) + `PROBE-RESULTS.md`
-(live-Sepolia ground truth) + `BATCHER-NOTES.md` + the `zama-docs/` pack. See `CP2-STATUS.md` / `CP3-STATUS.md`
-/ `CP4-STATUS.md`.
+## Known issues & audit disclosure
+A full read-only audit was run over this repo (contracts, frontend, scripts, config). The core protocol is
+sound — mock test suite green (27/27), frontend type-clean, on-chain addresses consistent across frontend /
+deployments / keeper, and FHE ACL hygiene correct (every stored handle `allowThis` + `allow(user)`, outgoing
+transfers `allowTransient`, epoch/gate finalizers rebuild handles from storage with replay guards +
+`checkSignatures`). The issues below are **identified and documented, not hidden.** None affects the current
+seeded Sepolia deployment; they matter for future redeploys and specific edge cases, and fixes are planned
+post-submission.
+
+- **Epoch-brick on a zero-aggregate market (fix needs a redeploy).** `closeEpoch` has no on-chain guard
+  against snapshotting an uninitialized/zero aggregate handle; the KMS `publicDecrypt` rejects a zero handle,
+  which would freeze the epoch machine. **Mitigated operationally** in the live deployment: every market is
+  seeded *before* its first `closeEpoch`, and the keeper only drives seeded markets — so it cannot occur here.
+  Planned fix: seed the aggregates to a non-zero baseline in the constructor, or gate `closeEpoch` on a
+  plaintext activity counter and require non-null handles before revealing.
+- **Liquidation stale-snapshot edge case.** `finalizeLiquidation` seizes against the debt snapshot taken at
+  `poke` time without re-checking current health, and there is no one-poke-per-position lock — so a borrower
+  who cures within the poke TTL, or a double-poke, could be over-seized. Planned fix: a single active poke per
+  `(market, user)` + recompute health/seize from the *current* position at finalize.
+- **`deleverage` cash accounting.** On repayments grown by accrued interest, `availCash` can be credited more
+  than `rebalanceQueue` is debited, so the "`availCash ≤ physical balance`" invariant can drift (the excess is
+  share-backed, not cash-backed). Planned fix: credit `availCash` only by the queue-covered portion.
+
+These sit alongside the **boundary leaks already documented above** — participation/timing are public, the
+wrap/unwrap and net-routing steps cross the confidential↔public boundary, and batch anonymity is only *N−1*
+within a window — which are inherent to confidential lending on a public chain, not defects.
+
+Design of record: `ARCHITECTURE.md` (v1.0 + amendment notes) + `ADDENDUM.md` (v1.1) + `BATCHER-NOTES.md`
++ the `zama-docs/` pack. See `CP2-STATUS.md` / `CP3-STATUS.md` / `CP4-STATUS.md`.

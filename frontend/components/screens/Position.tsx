@@ -66,15 +66,18 @@ function PositionCard({ market }: { market: MarketDef }) {
 
   const onDecrypt = async () => {
     if (!locked) return;
-    setWantDecrypt(true);
+    // Grant the permit BEFORE enabling the decrypt query. Enabling first (setWantDecrypt then grant) let the
+    // KMS decrypt fire before the permit existed on a first-ever decrypt; if that errored, `decrypting` stayed
+    // true forever and the spinner hung. Balances.tsx already does grant-then-enable — match it.
     if (!hasPermit) {
       try {
         await grantPermit(PERMIT_CONTRACTS);
       } catch (e: any) {
-        setWantDecrypt(false);
         toast(e?.shortMessage || e?.message?.split("\n")[0] || "Signature rejected", "err");
+        return;
       }
     }
+    setWantDecrypt(true);
   };
 
   const suppliedShown = revealed ? fmtUnits6(supplyVal) : DOTS;

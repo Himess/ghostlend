@@ -6,7 +6,7 @@ import { css } from "@/lib/css";
 import { DOTS } from "@/lib/format";
 import { ADDR } from "@/lib/addresses";
 import { poolAbi } from "@/lib/abis";
-import { useMarketsLive, useVaultStats } from "@/lib/hooks";
+import { useMarketsLive, useVaultStats, usePositionHandles } from "@/lib/hooks";
 import { useToast } from "@/components/Toast";
 
 const MARKET_ID = 2; // csteakcUSDC loop — vault-priced market
@@ -49,6 +49,12 @@ export function Leverage() {
   const m2 = markets.find((m) => m.id === MARKET_ID);
   const vaultApy = vault.apy;
   const aprM2 = m2?.apr ?? 0;
+
+  // Real chain read: does the connected wallet actually hold a Market-2 position? `positionOf` returns a
+  // bytes32(0) collateral handle for a never-opened position, so gate the "Open positions" card on it —
+  // we never render a fake static row or a fabricated APY. The amounts stay encrypted; existence is public.
+  const { collateral: m2Coll } = usePositionHandles(MARKET_ID);
+  const hasPosition = isConnected && !!m2Coll && m2Coll.toLowerCase() !== "0x" + "0".repeat(64);
 
   const setMax = () => setDepositAmt("25000");
 
@@ -225,33 +231,41 @@ export function Leverage() {
         </div>
       </div>
 
-      {/* DELEVERAGE */}
+      {/* OPEN POSITIONS — gated on a real Market-2 position read. No fake static row, no fabricated APY:
+          the leverage ratio + carry are encrypted on-chain (decrypt them in My Position); only existence
+          is public here. */}
       <div style={css("background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:0 1px 2px rgba(20,18,12,.03);margin-top:16px;overflow:hidden")}>
         <div style={css("padding:20px 26px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between")}>
           <span style={css("font:750 17px var(--display);letter-spacing:-.01em")}>Open positions</span>
-          <span style={css("font:600 12px var(--mono);color:var(--ink-3)")}>1 active</span>
+          <span style={css("font:600 12px var(--mono);color:var(--ink-3)")}>{hasPosition ? "1 active" : "0 active"}</span>
         </div>
-        <div style={css("padding:18px 26px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap")}>
-          <div style={css("display:flex;align-items:center;gap:14px;min-width:0")}>
-            <span style={css("width:40px;height:40px;flex:none;border-radius:12px;background:var(--green-bg);color:#166b45;display:flex;align-items:center;justify-content:center;font:700 15px var(--mono)")}>S</span>
-            <div style={css("display:flex;flex-direction:column;gap:2px;min-width:0")}>
-              <span style={css("font:700 14.5px var(--display);color:var(--ink)")}>csteakcUSDC loop</span>
-              <span style={css("font:400 12px var(--display);color:var(--ink-3)")}>via GhostLend Confidential Prime · Market 2</span>
+        {hasPosition ? (
+          <div style={css("padding:18px 26px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap")}>
+            <div style={css("display:flex;align-items:center;gap:14px;min-width:0")}>
+              <span style={css("width:40px;height:40px;flex:none;border-radius:12px;background:var(--green-bg);color:#166b45;display:flex;align-items:center;justify-content:center;font:700 15px var(--mono)")}>S</span>
+              <div style={css("display:flex;flex-direction:column;gap:2px;min-width:0")}>
+                <span style={css("font:700 14.5px var(--display);color:var(--ink)")}>csteakcUSDC loop</span>
+                <span style={css("font:400 12px var(--display);color:var(--ink-3)")}>via GhostLend Confidential Prime · Market 2</span>
+              </div>
+            </div>
+            <div style={css("display:flex;align-items:center;gap:20px;flex-wrap:wrap")}>
+              <div style={css("display:flex;flex-direction:column;gap:3px")}>
+                <span style={css("font:600 10px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)")}>Leverage</span>
+                <span style={css("display:inline-flex;align-items:center;gap:6px;font:700 13px var(--mono);color:var(--ink)")}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>encrypted</span>
+              </div>
+              <div style={css("display:flex;flex-direction:column;gap:3px")}>
+                <span style={css("font:600 10px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)")}>Net carry</span>
+                <span style={css("display:inline-flex;align-items:center;gap:6px;font:700 13px var(--mono);color:var(--ink)")}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>encrypted</span>
+              </div>
+              <button onClick={closePos} style={css("padding:10px 18px;border-radius:999px;border:1px solid var(--line-2);background:#fff;font:650 13px var(--display);color:var(--ink);cursor:pointer")}>Close</button>
             </div>
           </div>
-          <div style={css("display:flex;align-items:center;gap:20px;flex-wrap:wrap")}>
-            <div style={css("display:flex;flex-direction:column;gap:3px")}>
-              <span style={css("font:600 10px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)")}>Leverage</span>
-              <span style={css("display:inline-flex;align-items:center;gap:6px;font:700 13px var(--mono);color:var(--ink)")}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>encrypted</span>
-            </div>
-            <div style={css("display:flex;flex-direction:column;gap:3px")}>
-              <span style={css("font:600 10px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)")}>Net carry</span>
-              <span style={css("font:700 13px var(--mono);color:var(--green)")}>+4.2% APY</span>
-            </div>
-            <span style={css("display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;background:var(--green-bg);font:650 12px var(--display);color:#166b45")}><span style={css("width:7px;height:7px;border-radius:50%;background:var(--green)")} />Healthy</span>
-            <button onClick={closePos} style={css("padding:10px 18px;border-radius:999px;border:1px solid var(--line-2);background:#fff;font:650 13px var(--display);color:var(--ink);cursor:pointer")}>Close</button>
+        ) : (
+          <div style={css("padding:34px 26px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center")}>
+            <span style={css("font:650 14px var(--display);color:var(--ink-2)")}>No open positions</span>
+            <span style={css("font:400 12.5px var(--display);color:var(--ink-3);max-width:42ch")}>{isConnected ? "Open a leveraged position above — it will appear here once the transaction confirms." : "Connect your wallet to see your open positions."}</span>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

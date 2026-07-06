@@ -1,24 +1,24 @@
 {
-  "name": "fhevm-hardhat-template",
-  "description": "Hardhat-based template for developing FHEVM Solidity smart contracts",
-  "version": "0.4.1",
+  "name": "ghostlend",
+  "description": "GhostLend — confidential lending + leverage on Zama FHEVM (Sepolia)",
+  "version": "1.0.0",
   "engines": {
     "node": ">=20",
     "npm": ">=7.0.0"
   },
   "license": "BSD-3-Clause-Clear",
-  "homepage": "https://github.com/zama-ai/fhevm-hardhat-template/README.md",
+  "homepage": "https://ghostlend.vercel.app",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zama-ai/fhevm-hardhat-template.git"
+    "url": "git+https://github.com/Himess/ghostlend.git"
   },
   "keywords": [
+    "ghostlend",
+    "confidential-lending",
+    "leverage",
     "fhevm",
     "zama",
-    "eth",
     "ethereum",
-    "dapps",
-    "wallet",
     "web3",
     "typescript",
     "hardhat"

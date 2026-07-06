@@ -15,6 +15,26 @@ import { useToast } from "@/components/Toast";
 // Every step is an encrypted pool op; there is no public swap leg anywhere in the path.
 const u6 = (s: string) => BigInt(Math.max(0, Math.floor(Number(s || "0") * 1e6)));
 
+// Hoisted to module scope. Defining these INSIDE Wizard() gave them a fresh component identity on every
+// render, so React unmounted+remounted the <input> on each keystroke and it lost focus (only one char per
+// click). Module scope = stable identity across renders → the input keeps focus.
+function Field({ label, tok, val, set }: { label: string; tok: string; val: string; set: (v: string) => void }) {
+  return (
+    <div style={css("border:1px solid var(--line);border-radius:14px;padding:14px 16px")}>
+      <div style={css("display:flex;justify-content:space-between;margin-bottom:6px")}><span style={css("font:600 12px var(--display);color:var(--ink-2)")}>{label}</span></div>
+      <div style={css("display:flex;align-items:center;gap:10px")}>
+        <input value={val} inputMode="decimal" onChange={(e) => set(e.target.value.replace(/[^0-9.]/g, ""))} style={css("border:none;outline:none;background:none;font:750 24px var(--display);color:var(--ink);flex:1;min-width:0;padding:0")} />
+        <span style={css("display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-2);font:650 12.5px var(--display);color:var(--ink);white-space:nowrap;flex:none")}><span style={css("width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font:700 8px var(--mono)")}>c</span>{tok}</span>
+      </div>
+    </div>
+  );
+}
+function Priv() {
+  return (
+    <div style={css("display:flex;align-items:center;gap:7px;margin-top:10px")}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg><span style={css("font:600 11.5px var(--display);color:#166b45")}>Encrypted · no public swap leg</span></div>
+  );
+}
+
 export function Wizard() {
   const { wizardOpen, setWizardOpen } = useNav();
   const { address, isConnected } = useAccount();
@@ -66,19 +86,6 @@ export function Wizard() {
       setStep(3);
     } catch (e: any) { toast(e.shortMessage || e.message?.split("\n")[0] || "failed", "err"); } finally { setBusy(false); }
   };
-
-  const Field = ({ label, tok, val, set }: { label: string; tok: string; val: string; set: (v: string) => void }) => (
-    <div style={css("border:1px solid var(--line);border-radius:14px;padding:14px 16px")}>
-      <div style={css("display:flex;justify-content:space-between;margin-bottom:6px")}><span style={css("font:600 12px var(--display);color:var(--ink-2)")}>{label}</span></div>
-      <div style={css("display:flex;align-items:center;gap:10px")}>
-        <input value={val} inputMode="decimal" onChange={(e) => set(e.target.value.replace(/[^0-9.]/g, ""))} style={css("border:none;outline:none;background:none;font:750 24px var(--display);color:var(--ink);flex:1;min-width:0;padding:0")} />
-        <span style={css("display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-2);font:650 12.5px var(--display);color:var(--ink);white-space:nowrap;flex:none")}><span style={css("width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font:700 8px var(--mono)")}>c</span>{tok}</span>
-      </div>
-    </div>
-  );
-  const Priv = () => (
-    <div style={css("display:flex;align-items:center;gap:7px;margin-top:10px")}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg><span style={css("font:600 11.5px var(--display);color:#166b45")}>Encrypted · no public swap leg</span></div>
-  );
 
   return (
     <div onClick={close} style={css("position:fixed;inset:0;z-index:50;background:rgba(20,18,12,.42);display:flex;align-items:center;justify-content:center;padding:20px")}>
