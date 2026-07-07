@@ -1,5 +1,6 @@
-// Real token logos (inline SVG, self-contained — no external assets) + a Zama-style "confidential" lock
-// badge for the shielded c-tokens (cUSDC / cWETH / csteakcUSDC). One component, used everywhere.
+// Real token logos (inline SVG / embedded image, self-contained — no external assets) + a Zama-style
+// "confidential" lock badge for the shielded c-tokens (cUSDC / cWETH / csteakcUSDC). Used everywhere.
+import { STEAK_LOGO } from "@/lib/steakLogo";
 
 type Base = "usdc" | "eth" | "steak" | "generic";
 
@@ -50,14 +51,8 @@ function EthLogo({ s }: { s: number }) {
 }
 
 function SteakLogo({ s }: { s: number }) {
-  return (
-    <svg width={s} height={s} viewBox="0 0 32 32" fill="none" aria-hidden>
-      <circle cx="16" cy="16" r="16" fill="#159A5B" />
-      {/* stylized steak/marbling mark */}
-      <path d="M11 12.2c0-2 1.9-3.4 5-3.4s5 1.5 5 3.7c0 1.8-1.4 2.8-3.1 3.5-1.4.6-2.1 1-2.1 1.9v.6" stroke="#fff" strokeWidth="2.1" strokeLinecap="round" fill="none" />
-      <circle cx="15.8" cy="22.4" r="1.5" fill="#fff" />
-    </svg>
-  );
+  // Real Steakhouse mark (embedded). The source is a square, so crop to a circle to match the other logos.
+  return <img src={STEAK_LOGO} width={s} height={s} alt="" style={{ borderRadius: "50%", objectFit: "cover", display: "block", flex: "none" }} />;
 }
 
 function GenericLogo({ s, token }: { s: number; token: string }) {
