@@ -1,12 +1,12 @@
 # GhostLend — Sepolia production addresses (CP6)
 
 **Network:** Ethereum Sepolia (chainId 11155111) · **Deployer:** `0xF505e2E71df58D7244189072008f25f6b6aaE5ae`
-**Deployed:** 2026-07-05 · machine-readable source: [`deployments/sepolia.json`](./sepolia.json)
+**Deployed:** 2026-07-07 (PHASE-2 redeploy — audit-fixed GhostLendPool + fresh Market2 stack; oracle/cUSDC/cWETH reused) · machine-readable source: [`deployments/sepolia.json`](./sepolia.json)
 
 ## Core protocol
 | Contract | Address | Notes |
 |---|---|---|
-| **GhostLendPool** | [`0x1A887cb0dB1438e8f4597BBf4E8369e4C9146E14`](https://sepolia.etherscan.io/address/0x1A887cb0dB1438e8f4597BBf4E8369e4C9146E14) | 3 isolated markets (M0/M1/M2) |
+| **GhostLendPool** | [`0x1E7Bc12dD59600Ec5A801942e84B26c5ffe860b7`](https://sepolia.etherscan.io/address/0x1E7Bc12dD59600Ec5A801942e84B26c5ffe860b7) | 3 isolated markets (M0/M1/M2) |
 | **OracleAdapter** | [`0x0883620ac3cbfe3ff28efb52Ee2998418AAc8495`](https://sepolia.etherscan.io/address/0x0883620ac3cbfe3ff28efb52Ee2998418AAc8495) | wraps Chainlink ETH/USD (reused) |
 | Chainlink ETH/USD | [`0x694AA1769357215DE4FAC081bf1f309aDC325306`](https://sepolia.etherscan.io/address/0x694AA1769357215DE4FAC081bf1f309aDC325306) | canonical Sepolia feed |
 
@@ -20,11 +20,11 @@
 ## Market 2 vault stack + GhostGate
 | Contract | Address |
 |---|---|
-| **MockYieldVault** (ERC-4626, gYVS) | [`0x7B560a3EFD4568Ea92f77963125F1C350bc65547`](https://sepolia.etherscan.io/address/0x7B560a3EFD4568Ea92f77963125F1C350bc65547) |
-| **csteakcUSDC** (ConfidentialShareWrapper) | [`0x09959630F67a6b8818b464487877DbDd6f4B14aE`](https://sepolia.etherscan.io/address/0x09959630F67a6b8818b464487877DbDd6f4B14aE) |
-| **DepositBatcher** (cUSDC→vault→cSHARE) | [`0x0f425d953C7808DC7E1cD4D9Fa4c0e5faCaF5567`](https://sepolia.etherscan.io/address/0x0f425d953C7808DC7E1cD4D9Fa4c0e5faCaF5567) |
-| **WithdrawBatcher** (cSHARE→vault→cUSDC) | [`0x541979A755C4c31E828E9B9B6A2fD1b51845c5D3`](https://sepolia.etherscan.io/address/0x541979A755C4c31E828E9B9B6A2fD1b51845c5D3) |
-| **GhostGate** (netting gateway) | [`0xE90c95e8d3D82D3Ba5d309a3a9BE7575478dCaBC`](https://sepolia.etherscan.io/address/0xE90c95e8d3D82D3Ba5d309a3a9BE7575478dCaBC) |
+| **MockYieldVault** (ERC-4626, gYVS) | [`0xfaC681ccB925863fa336F89aa81c272b97593838`](https://sepolia.etherscan.io/address/0xfaC681ccB925863fa336F89aa81c272b97593838) |
+| **csteakcUSDC** (ConfidentialShareWrapper) | [`0x324A43A9269eB59f23713314df977272c2B8f8d8`](https://sepolia.etherscan.io/address/0x324A43A9269eB59f23713314df977272c2B8f8d8) |
+| **DepositBatcher** (cUSDC→vault→cSHARE) | [`0xc0C68055A20849ea3892E2343A8320A8A8E9FA43`](https://sepolia.etherscan.io/address/0xc0C68055A20849ea3892E2343A8320A8A8E9FA43) |
+| **WithdrawBatcher** (cSHARE→vault→cUSDC) | [`0x97576Eb9b73B255fB1D813BA69D17E1E57941112`](https://sepolia.etherscan.io/address/0x97576Eb9b73B255fB1D813BA69D17E1E57941112) |
+| **GhostGate** (netting gateway) | [`0xb3D9A7c8c8F0E721f9e69bb3eC08a0CB6a03cb95`](https://sepolia.etherscan.io/address/0xb3D9A7c8c8F0E721f9e69bb3eC08a0CB6a03cb95) |
 
 ## Tokens (reused live Zama wrappers)
 | Token | Wrapper | Underlying (public mint) |
@@ -36,13 +36,13 @@
 Requires an Etherscan API key: `npx hardhat vars set ETHERSCAN_API_KEY <key>`. Then:
 ```bash
 # simple single-arg contracts
-npx hardhat verify --network sepolia 0x7B560a3EFD4568Ea92f77963125F1C350bc65547 0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF   # MockYieldVault
-npx hardhat verify --network sepolia 0x09959630F67a6b8818b464487877DbDd6f4B14aE 0x7B560a3EFD4568Ea92f77963125F1C350bc65547   # csteakcUSDC
-npx hardhat verify --network sepolia 0x0f425d953C7808DC7E1cD4D9Fa4c0e5faCaF5567 0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639 0x09959630F67a6b8818b464487877DbDd6f4B14aE 0x7B560a3EFD4568Ea92f77963125F1C350bc65547 60   # DepositBatcher
-npx hardhat verify --network sepolia 0x541979A755C4c31E828E9B9B6A2fD1b51845c5D3 0x09959630F67a6b8818b464487877DbDd6f4B14aE 0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639 0x7B560a3EFD4568Ea92f77963125F1C350bc65547 60   # WithdrawBatcher
-npx hardhat verify --network sepolia 0xE90c95e8d3D82D3Ba5d309a3a9BE7575478dCaBC 0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639 0x09959630F67a6b8818b464487877DbDd6f4B14aE 0x7B560a3EFD4568Ea92f77963125F1C350bc65547 60   # GhostGate
+npx hardhat verify --network sepolia 0xfaC681ccB925863fa336F89aa81c272b97593838 0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF   # MockYieldVault
+npx hardhat verify --network sepolia 0x324A43A9269eB59f23713314df977272c2B8f8d8 0xfaC681ccB925863fa336F89aa81c272b97593838   # csteakcUSDC
+npx hardhat verify --network sepolia 0xc0C68055A20849ea3892E2343A8320A8A8E9FA43 0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639 0x324A43A9269eB59f23713314df977272c2B8f8d8 0xfaC681ccB925863fa336F89aa81c272b97593838 60   # DepositBatcher
+npx hardhat verify --network sepolia 0x97576Eb9b73B255fB1D813BA69D17E1E57941112 0x324A43A9269eB59f23713314df977272c2B8f8d8 0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639 0xfaC681ccB925863fa336F89aa81c272b97593838 60   # WithdrawBatcher
+npx hardhat verify --network sepolia 0xb3D9A7c8c8F0E721f9e69bb3eC08a0CB6a03cb95 0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639 0x324A43A9269eB59f23713314df977272c2B8f8d8 0xfaC681ccB925863fa336F89aa81c272b97593838 60   # GhostGate
 # complex constructor args (pool: struct[] ; oracle): use the args module
-npx hardhat verify --network sepolia --constructor-args deployments/verify-pool.js 0x1A887cb0dB1438e8f4597BBf4E8369e4C9146E14   # GhostLendPool
+npx hardhat verify --network sepolia --constructor-args deployments/verify-pool.js 0x1E7Bc12dD59600Ec5A801942e84B26c5ffe860b7   # GhostLendPool
 npx hardhat verify --network sepolia 0x0883620ac3cbfe3ff28efb52Ee2998418AAc8495 0x694AA1769357215DE4FAC081bf1f309aDC325306   # OracleAdapter
 ```
 One-shot: `npm run verify:all` (see package.json).

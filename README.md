@@ -31,10 +31,10 @@ All 7 contracts are Etherscan-verified; addresses in [`deployments/ADDRESSES.md`
   without encrypted division, at the cost of an exact-rate drift guard. 
 
 ## Deployed (Sepolia) — full production set in [`deployments/ADDRESSES.md`](./deployments/ADDRESSES.md)
-- **GhostLendPool** (M0/M1/M2) `0x1A887cb0dB1438e8f4597BBf4E8369e4C9146E14`
+- **GhostLendPool** (M0/M1/M2) `0x1E7Bc12dD59600Ec5A801942e84B26c5ffe860b7`
 - **OracleAdapter** (Chainlink ETH/USD) `0x0883620ac3cbfe3ff28efb52Ee2998418AAc8495`
-- **GhostGate** `0xE90c95e8d3D82D3Ba5d309a3a9BE7575478dCaBC` · **MockYieldVault** `0x7B560a…65547` ·
-  **csteakcUSDC** `0x099596…14aE` · DepositBatcher `0x0f425d…5567` · WithdrawBatcher `0x541979…c5D3`
+- **GhostGate** `0xb3D9A7c8c8F0E721f9e69bb3eC08a0CB6a03cb95` · **MockYieldVault** `0xfaC681…3838` ·
+  **csteakcUSDC** `0x324A43…f8d8` · DepositBatcher `0xc0C680…9FA43` · WithdrawBatcher `0x97576E…1112`
 - Markets: **M0** cWETH→cUSDC · **M1** cUSDC→cWETH (LLTV 80%) · **M2** csteakcUSDC→cUSDC (LLTV 90%, vault-priced)
 - Externals: cUSDC `0x7c5BF4…3639`, cWETH `0x4620…3158`, feed `0x694A…5306`
 - The legacy registry-on core pool `0x9631…2D64` (M0/M1 only) remains live for reference.
