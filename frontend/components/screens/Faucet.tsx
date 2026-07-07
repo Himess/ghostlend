@@ -15,8 +15,21 @@ function toBaseUnits(amountStr: string, decimals: number): bigint {
   return BigInt(whole || "0") * 10n ** BigInt(decimals) + BigInt(fracPadded || "0");
 }
 function errMsg(e: unknown, fallback: string): string {
-  const any = e as { shortMessage?: string; message?: string } | undefined;
-  return any?.shortMessage || any?.message || fallback;
+  const top = e as { shortMessage?: string; message?: string; cause?: unknown } | undefined;
+  const topMsg = top?.shortMessage || top?.message || "";
+  // The Zama SDK wraps write failures as "Transaction failed during <op>" and buries the real
+  // viem/wallet error (revert reason, chain mismatch, user-rejected, …) in .cause — walk the chain
+  // and surface the first distinct message so the toast is actually actionable.
+  let cause: unknown = top?.cause;
+  let causeMsg = "";
+  for (let i = 0; cause && typeof cause === "object" && i < 6; i++) {
+    const c = cause as { shortMessage?: string; message?: string; cause?: unknown };
+    const m = c.shortMessage || c.message;
+    if (typeof m === "string" && m && m !== topMsg) { causeMsg = m; break; }
+    cause = c.cause;
+  }
+  const combined = causeMsg ? `${topMsg} — ${causeMsg}` : topMsg;
+  return combined || fallback;
 }
 
 function segStyle(active: boolean) {
@@ -106,6 +119,7 @@ export function Faucet() {
       await shield({ amount });
       pushToast(`Shielded ${shieldAmt || "0"} ${shieldToken} → c${shieldToken} · now confidential`);
     } catch (e) {
+      console.error("[shield failed] full error + cause chain:", e); // real reason is in .cause
       pushToast(errMsg(e, "Shield failed"), "err");
     }
   }
