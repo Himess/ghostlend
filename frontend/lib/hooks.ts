@@ -40,14 +40,21 @@ export function useMarketsLive() {
   const contracts = MARKETS.flatMap((m) => [
     { ...POOL, functionName: "marketInfo", args: [m.id] } as const,
     { ...POOL, functionName: "currentEpochId", args: [m.id] } as const,
+    { ...POOL, functionName: "leverageCarry", args: [m.id, 2, 0] } as const, // effective borrow APR source
   ]);
   const { data, isLoading, refetch } = useReadContracts({ contracts, query: { refetchInterval: 15000 } });
   const markets: MarketLive[] = MARKETS.map((m, i) => {
-    const info = data?.[i * 2]?.result as any;
-    const epochId = data?.[i * 2 + 1]?.result as any;
+    const info = data?.[i * 3]?.result as any;
+    const epochId = data?.[i * 3 + 1]?.result as any;
+    const carry = data?.[i * 3 + 2]?.result as any;
     const util = info ? Number(info[7]) : 0; // lastUtilizationBps
+    const reserveBps = info ? Number(info[4]) : 1000;
+    // Effective on-chain borrow APR = what the pool actually accrues (leverageCarry annualizes the STORED
+    // 1e9 per-sec rate; it truncates vs the nominal IRM curve). Show this consistently — never the nominal.
+    const apr = carry ? Number(carry[0]) / 100 : borrowAprPct(util);
+    const apy = (apr * util * (10000 - reserveBps)) / 1e8; // supply APY derived from the effective borrow rate
     return {
-      id: m.id, util, lltv: m.lltv, apr: borrowAprPct(util), apy: supplyApyPct(util),
+      id: m.id, util, lltv: m.lltv, apr, apy,
       epochId: epochId != null ? Number(epochId) : 0,
       borrowIndex: info ? (info[5] as bigint) : 1_000_000n,
       supplyIndex: info ? (info[6] as bigint) : 1_000_000n,

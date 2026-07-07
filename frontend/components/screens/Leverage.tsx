@@ -220,7 +220,7 @@ export function Leverage() {
               <div style={css("display:flex;align-items:center;justify-content:space-between")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>Borrow cost</span><span style={css("font:600 13px var(--mono);color:var(--ink-2)")}>− {aprM2.toFixed(2)}% × {(levClamped - 1).toFixed(1)}×</span></div>
               <div style={css("display:flex;align-items:center;justify-content:space-between;margin-top:5px;padding:13px 15px;border-radius:13px;background:var(--panel)")}>
                 <span style={css("font:650 13.5px var(--display);color:#e9e6df")}>Net carry</span>
-                <span style={css("font:800 22px var(--display);color:#7fe0a8;font-variant-numeric:tabular-nums;letter-spacing:-.01em")}>{netCarryStr}% <span style={css("font:600 12px var(--mono);color:#a9d9bd")}>APY</span></span>
+                <span style={css(`font:800 22px var(--display);color:${netCarry >= 0 ? "#7fe0a8" : "#f0a79b"};font-variant-numeric:tabular-nums;letter-spacing:-.01em`)}>{netCarryStr}% <span style={css(`font:600 12px var(--mono);color:${netCarry >= 0 ? "#a9d9bd" : "#d6a99f"}`)}>APY</span></span>
               </div>
             </div>
           </div>
