@@ -7,11 +7,9 @@ import { DOTS, fmtUnits6 } from "@/lib/format";
 import { ADDR, MARKETS, PERMIT_CONTRACTS, type MarketDef } from "@/lib/addresses";
 import { usePositionHandles, useEthPrice, useVaultStats, tokenUsdPerUnit } from "@/lib/hooks";
 import { useToast } from "@/components/Toast";
+import { TokenDuo } from "@/components/TokenIcon";
 
 // cWETH / cUSDC / csteakcUSDC token-pair chip colors + initials (csteakcUSDC -> "S", else the 2nd letter).
-const TOKEN_COLOR: Record<string, string> = { cWETH: "#3a3f4a", cUSDC: "#2775ca", csteakcUSDC: "#1c8f5a" };
-const colorFor = (t: string) => TOKEN_COLOR[t] || "#8a867c";
-const initFor = (t: string) => (t === "csteakcUSDC" ? "S" : t.length > 1 ? t[1].toUpperCase() : "?");
 
 const StatLabel = ({ t }: { t: string }) => (
   <span style={css("font:650 10px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)")}>{t}</span>
@@ -93,22 +91,7 @@ function PositionCard({ market }: { market: MarketDef }) {
     <div style={css("background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:0 1px 2px rgba(20,18,12,.03);overflow:hidden")}>
       {/* header */}
       <div style={css("padding:20px 24px;display:flex;align-items:center;gap:13px;border-bottom:1px solid var(--line)")}>
-        <span style={css("display:inline-flex;align-items:center;flex:none")}>
-          <span
-            style={css(
-              `width:32px;height:32px;border-radius:50%;background:${colorFor(market.coll)};border:2px solid var(--surface);color:#fff;display:flex;align-items:center;justify-content:center;font:700 11px var(--mono);position:relative;z-index:2`,
-            )}
-          >
-            {initFor(market.coll)}
-          </span>
-          <span
-            style={css(
-              `width:32px;height:32px;border-radius:50%;background:${colorFor(market.borrow)};border:2px solid var(--surface);color:#fff;display:flex;align-items:center;justify-content:center;font:700 11px var(--mono);margin-left:-11px`,
-            )}
-          >
-            {initFor(market.borrow)}
-          </span>
-        </span>
+        <TokenDuo coll={market.coll} borrow={market.borrow} size={32} />
         <div style={css("display:flex;flex-direction:column;gap:1px;min-width:0")}>
           <span style={css("font:750 17px var(--display);letter-spacing:-.01em")}>{market.coll} / {market.borrow}</span>
           <span style={css("font:400 12px var(--display);color:var(--ink-3)")}>Market {market.id}</span>

@@ -7,6 +7,7 @@ import { useNav } from "@/lib/nav";
 import { useToast } from "@/components/Toast";
 import { ADDR } from "@/lib/addresses";
 import { erc20Abi } from "@/lib/abis";
+import { TokenIcon } from "@/components/TokenIcon";
 
 // Decimal-string -> base-units bigint without float precision loss (matters at 18 decimals).
 function toBaseUnits(amountStr: string, decimals: number): bigint {
@@ -56,7 +57,7 @@ function MintRow({ symbol, bg, onMint, disabled, pending }: { symbol: string; bg
   return (
     <div style={css("display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border:1px solid var(--line);border-radius:13px")}>
       <span style={css("display:inline-flex;align-items:center;gap:9px;font:650 13.5px var(--display);color:var(--ink)")}>
-        <span style={css(`width:26px;height:26px;border-radius:50%;background:${bg};color:#fff;display:flex;align-items:center;justify-content:center;font:700 10px var(--mono)`)}>{symbol[0]}</span>
+        <TokenIcon token={symbol} size={26} />
         {symbol}
       </span>
       <button
@@ -196,8 +197,8 @@ export function Faucet() {
             <span style={css("font:600 11px var(--display);color:var(--ink-3)")}>You receive</span>
             <div style={css("display:flex;align-items:center;gap:8px;margin-top:5px")}>
               <span style={css("font:750 22px var(--display);color:var(--ink);flex:1;font-variant-numeric:tabular-nums")}>{shieldAmt || "0"}</span>
-              <span style={css("display:inline-flex;align-items:center;gap:6px;font:650 12.5px var(--mono);color:var(--ink);white-space:nowrap")}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5" /><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" /></svg>
+              <span style={css("display:inline-flex;align-items:center;gap:7px;font:650 12.5px var(--mono);color:var(--ink);white-space:nowrap")}>
+                <TokenIcon token={shieldReceive} size={18} />
                 {shieldReceive}
               </span>
             </div>

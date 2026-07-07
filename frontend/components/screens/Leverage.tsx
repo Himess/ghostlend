@@ -8,6 +8,7 @@ import { ADDR } from "@/lib/addresses";
 import { poolAbi } from "@/lib/abis";
 import { useVaultStats, usePositionHandles, useEffectiveBorrowApr } from "@/lib/hooks";
 import { useToast } from "@/components/Toast";
+import { TokenIcon } from "@/components/TokenIcon";
 
 const MARKET_ID = 2; // csteakcUSDC loop — vault-priced market
 
@@ -127,7 +128,7 @@ export function Leverage() {
             />
             <div style={css("display:flex;align-items:center;gap:8px;flex:none")}>
               <span style={css("display:inline-flex;align-items:center;gap:8px;padding:7px 14px 7px 8px;border-radius:999px;background:var(--surface);border:1px solid var(--line-2);font:650 14px var(--display);color:var(--ink)")}>
-                <span style={css("width:22px;height:22px;border-radius:50%;background:#2775ca;color:#fff;display:flex;align-items:center;justify-content:center;font:700 11px var(--mono)")}>c</span>cUSDC
+                <TokenIcon token="cUSDC" size={22} />cUSDC
               </span>
             </div>
           </div>
@@ -238,7 +239,7 @@ export function Leverage() {
         {hasPosition ? (
           <div style={css("padding:18px 26px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap")}>
             <div style={css("display:flex;align-items:center;gap:14px;min-width:0")}>
-              <span style={css("width:40px;height:40px;flex:none;border-radius:12px;background:var(--green-bg);color:#166b45;display:flex;align-items:center;justify-content:center;font:700 15px var(--mono)")}>S</span>
+              <TokenIcon token="csteakcUSDC" size={40} />
               <div style={css("display:flex;flex-direction:column;gap:2px;min-width:0")}>
                 <span style={css("font:700 14.5px var(--display);color:var(--ink)")}>csteakcUSDC loop</span>
                 <span style={css("font:400 12px var(--display);color:var(--ink-3)")}>via GhostLend Confidential Prime · Market 2</span>

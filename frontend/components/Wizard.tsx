@@ -7,6 +7,7 @@ import { ADDR } from "@/lib/addresses";
 import { poolAbi } from "@/lib/abis";
 import { useNav } from "@/lib/nav";
 import { useToast } from "@/components/Toast";
+import { TokenIcon } from "@/components/TokenIcon";
 
 // CP6 task #4 — guided "get ETH exposure against your vault position" wizard. Composes, with NO swap and
 // BOTH legs confidential:
@@ -24,7 +25,7 @@ function Field({ label, tok, val, set }: { label: string; tok: string; val: stri
       <div style={css("display:flex;justify-content:space-between;margin-bottom:6px")}><span style={css("font:600 12px var(--display);color:var(--ink-2)")}>{label}</span></div>
       <div style={css("display:flex;align-items:center;gap:10px")}>
         <input value={val} inputMode="decimal" onChange={(e) => set(e.target.value.replace(/[^0-9.]/g, ""))} style={css("border:none;outline:none;background:none;font:750 24px var(--display);color:var(--ink);flex:1;min-width:0;padding:0")} />
-        <span style={css("display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-2);font:650 12.5px var(--display);color:var(--ink);white-space:nowrap;flex:none")}><span style={css("width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font:700 8px var(--mono)")}>c</span>{tok}</span>
+        <span style={css("display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-2);font:650 12.5px var(--display);color:var(--ink);white-space:nowrap;flex:none")}><TokenIcon token={tok} size={20} />{tok}</span>
       </div>
     </div>
   );

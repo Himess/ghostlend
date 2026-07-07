@@ -7,8 +7,8 @@ import { ADDR, PERMIT_CONTRACTS } from "@/lib/addresses";
 import { erc20Abi } from "@/lib/abis";
 import { useToast } from "@/components/Toast";
 import { DOTS } from "@/lib/format";
+import { TokenIcon } from "@/components/TokenIcon";
 
-const colorFor = (t: string) => (({ cWETH: "#3a3f4a", WETH: "#3a3f4a", cUSDC: "#2775ca", USDC: "#2775ca", csteakcUSDC: "#1c8f5a", ETH: "#627eea" } as any)[t] || "#8a867c");
 const fmt = (v: bigint | undefined, dec: number, digits = 4) => {
   if (v == null) return "—";
   const s = Number(v) / 10 ** dec;
@@ -19,7 +19,7 @@ function Row({ tok, label, value, locked }: { tok: string; label: string; value:
   return (
     <div style={css("display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line)")}>
       <div style={css("display:flex;align-items:center;gap:12px;min-width:0")}>
-        <span style={css(`width:32px;height:32px;flex:none;border-radius:50%;background:${colorFor(tok)};color:#fff;display:flex;align-items:center;justify-content:center;font:700 11px var(--mono)`)}>{tok === "csteakcUSDC" ? "S" : tok[0]}</span>
+        <TokenIcon token={tok} size={32} />
         <div style={css("display:flex;flex-direction:column;gap:1px;min-width:0")}>
           <span style={css("font:700 14px var(--display);color:var(--ink)")}>{tok}</span>
           <span style={css("font:400 11.5px var(--display);color:var(--ink-3)")}>{label}</span>

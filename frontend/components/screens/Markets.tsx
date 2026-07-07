@@ -9,27 +9,7 @@ import { compact, shortAddr, DOTS } from "@/lib/format";
 import { ADDR, MARKETS, EXPLORER } from "@/lib/addresses";
 import { poolAbi } from "@/lib/abis";
 import { useToast } from "@/components/Toast";
-
-// ---- shared token → color/initial (matches the design's colorFor/initFor) ----
-const TOKEN_COLOR: Record<string, string> = { cWETH: "#3a3f4a", cUSDC: "#2775ca", csteakcUSDC: "#1c8f5a" };
-const colorFor = (t: string) => TOKEN_COLOR[t] || "#8a867c";
-const initFor = (t: string) => (t === "csteakcUSDC" ? "S" : t && t.length > 1 ? t[1].toUpperCase() : "?");
-
-function TokenDuo({ coll, borrow, size }: { coll: string; borrow: string; size: "sm" | "lg" }) {
-  const lg = size === "lg";
-  const base: React.CSSProperties = {
-    width: lg ? 44 : 30, height: lg ? 44 : 30, borderRadius: "50%",
-    border: `${lg ? "2.5px" : "2px"} solid var(--surface)`, color: "#fff",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    fontFamily: "var(--mono)", fontWeight: 700, fontSize: lg ? 15 : 11,
-  };
-  return (
-    <span style={css("display:inline-flex;align-items:center;flex:none")}>
-      <span style={{ ...base, background: colorFor(coll), position: "relative", zIndex: 2 }}>{initFor(coll)}</span>
-      <span style={{ ...base, background: colorFor(borrow), marginLeft: lg ? -15 : -10 }}>{initFor(borrow)}</span>
-    </span>
-  );
-}
+import { TokenDuo, TokenIcon } from "@/components/TokenIcon";
 
 function tabStyle(active: boolean): React.CSSProperties {
   return {
@@ -92,7 +72,7 @@ function MarketList() {
           return (
             <div key={m.id} onClick={() => openMarket(m.id, "borrow")} style={css("background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:0 1px 2px rgba(20,18,12,.03);cursor:pointer;display:flex;flex-direction:column;transition:box-shadow .16s,border-color .16s")}>
                 <div style={css("padding:22px 22px 0;display:flex;align-items:center;gap:11px")}>
-                  <TokenDuo coll={m.coll} borrow={m.borrow} size="sm" />
+                  <TokenDuo coll={m.coll} borrow={m.borrow} size={34} />
                   <span style={css("font:750 18px var(--display);letter-spacing:-.01em")}>{m.coll} / {m.borrow}</span>
                   <span style={css("margin-left:auto;padding:4px 9px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);font:700 10.5px var(--mono);color:var(--ink-2);white-space:nowrap")}>LLTV {m.lltv}%</span>
                 </div>
@@ -241,7 +221,7 @@ function MarketDetail({ marketId }: { marketId: number }) {
         {/* MAIN COLUMN */}
         <div style={css("flex:1 1 500px;min-width:0")}>
           <div style={css("display:flex;align-items:center;gap:14px;flex-wrap:wrap")}>
-            <TokenDuo coll={md.coll} borrow={md.borrow} size="lg" />
+            <TokenDuo coll={md.coll} borrow={md.borrow} size={44} />
             <h1 style={css("margin:0;font:800 38px/1 var(--display);letter-spacing:-.03em")}>{md.coll} / {md.borrow}</h1>
             <span style={css("padding:5px 11px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);font:700 12px var(--mono);color:var(--ink-2)")}>LLTV {md.lltv}%</span>
           </div>
@@ -273,9 +253,9 @@ function MarketDetail({ marketId }: { marketId: number }) {
               <div style={css("margin-top:26px")}>
                 <h3 style={css("margin:0 0 6px;font:750 16px var(--display);letter-spacing:-.01em")}>Market Attributes</h3>
                 <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 44px")}>
-                  <div style={css("display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>Collateral</span><span style={css("font:650 13px var(--display);color:var(--ink);display:inline-flex;align-items:center;gap:7px")}><span style={css("width:18px;height:18px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font:700 8px var(--mono)")}>c</span>{md.collLabel}</span></div>
+                  <div style={css("display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>Collateral</span><span style={css("font:650 13px var(--display);color:var(--ink);display:inline-flex;align-items:center;gap:7px")}><TokenIcon token={md.coll} size={18} />{md.collLabel}</span></div>
                   <div style={css("display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>Oracle</span><span style={css("font:650 13px var(--display);color:var(--ink)")}>{md.oracle}</span></div>
-                  <div style={css("display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>Loan</span><span style={css("font:650 13px var(--display);color:var(--ink);display:inline-flex;align-items:center;gap:7px")}><span style={css("width:18px;height:18px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font:700 8px var(--mono)")}>c</span>{md.borrow}</span></div>
+                  <div style={css("display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>Loan</span><span style={css("font:650 13px var(--display);color:var(--ink);display:inline-flex;align-items:center;gap:7px")}><TokenIcon token={md.borrow} size={18} />{md.borrow}</span></div>
                   <div style={css("display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>Utilization</span><span style={css("font:650 13px var(--display);color:var(--ink)")}>{(util / 100).toFixed(0)}% <span style={css("font:400 11px var(--display);color:var(--ink-3)")}>· per-epoch</span></span></div>
                   <div style={css("display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>LLTV</span><span style={css("font:650 13px var(--mono);color:var(--ink)")}>{md.lltv}%</span></div>
                 </div>
@@ -328,14 +308,14 @@ function MarketDetail({ marketId }: { marketId: number }) {
                 <div style={css("display:flex;justify-content:space-between;align-items:center;margin-bottom:6px")}><span style={css("font:600 12px var(--display);color:var(--ink-2)")}>Supply Collateral {md.coll}</span><span style={css("font:700 10px var(--mono);color:var(--ink-3);letter-spacing:.05em")}>MAX</span></div>
                 <div style={css("display:flex;align-items:center;gap:10px")}>
                   <input value={collInput} onChange={(e) => setCollInput(e.target.value.replace(/[^0-9.]/g, ""))} inputMode="decimal" style={css("border:none;outline:none;background:none;font:750 26px var(--display);color:var(--ink);flex:1;min-width:0;padding:0;font-variant-numeric:tabular-nums")} />
-                  <span style={css("display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-2);font:650 13px var(--display);color:var(--ink);white-space:nowrap;flex:none")}><span style={css("width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font:700 9px var(--mono)")}>c</span>{md.coll}</span>
+                  <span style={css("display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-2);font:650 13px var(--display);color:var(--ink);white-space:nowrap;flex:none")}><TokenIcon token={md.coll} size={20} />{md.coll}</span>
                 </div>
               </div>
               <div style={css("margin-top:10px;border:1px solid var(--line);border-radius:14px;padding:14px 16px")}>
                 <div style={css("display:flex;justify-content:space-between;align-items:center;margin-bottom:6px")}><span style={css("font:600 12px var(--display);color:var(--ink-2)")}>Borrow {md.borrow}</span></div>
                 <div style={css("display:flex;align-items:center;gap:10px")}>
                   <input value={borrowInput} onChange={(e) => setBorrowInput(e.target.value.replace(/[^0-9.]/g, ""))} inputMode="decimal" style={css("border:none;outline:none;background:none;font:750 26px var(--display);color:var(--ink);flex:1;min-width:0;padding:0;font-variant-numeric:tabular-nums")} />
-                  <span style={css("display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-2);font:650 13px var(--display);color:var(--ink);white-space:nowrap;flex:none")}><span style={css("width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font:700 9px var(--mono)")}>c</span>{md.borrow}</span>
+                  <span style={css("display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-2);font:650 13px var(--display);color:var(--ink);white-space:nowrap;flex:none")}><TokenIcon token={md.borrow} size={20} />{md.borrow}</span>
                 </div>
               </div>
             </>
@@ -346,7 +326,7 @@ function MarketDetail({ marketId }: { marketId: number }) {
               <div style={css("display:flex;justify-content:space-between;align-items:center;margin-bottom:6px")}><span style={css("font:600 12px var(--display);color:var(--ink-2)")}>{VERB[action]}</span><span style={css("font:700 10px var(--mono);color:var(--ink-3);letter-spacing:.05em")}>MAX</span></div>
               <div style={css("display:flex;align-items:center;gap:10px")}>
                 <input value={actionAmt} onChange={(e) => setActionAmt(e.target.value.replace(/[^0-9.]/g, ""))} inputMode="decimal" style={css("border:none;outline:none;background:none;font:750 26px var(--display);color:var(--ink);flex:1;min-width:0;padding:0;font-variant-numeric:tabular-nums")} />
-                <span style={css("display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-2);font:650 13px var(--display);color:var(--ink);white-space:nowrap;flex:none")}><span style={css("width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font:700 9px var(--mono)")}>c</span>{actionToken}</span>
+                <span style={css("display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-2);font:650 13px var(--display);color:var(--ink);white-space:nowrap;flex:none")}><TokenIcon token={actionToken} size={20} />{actionToken}</span>
               </div>
             </div>
           )}

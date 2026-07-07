@@ -9,6 +9,7 @@ import { compact, mmss, shortAddr } from "@/lib/format";
 import { ADDR } from "@/lib/addresses";
 import { wrapperAbi, depositBatcherAbi, withdrawBatcherAbi } from "@/lib/abis";
 import { useToast } from "@/components/Toast";
+import { TokenIcon } from "@/components/TokenIcon";
 
 function segStyle(active: boolean): React.CSSProperties {
   return {
@@ -105,7 +106,7 @@ export function Vault() {
         {/* LEFT */}
         <div style={css("flex:1 1 470px;min-width:0")}>
           <div style={css("display:flex;align-items:center;gap:14px;flex-wrap:wrap")}>
-            <span style={css("width:46px;height:46px;flex:none;border-radius:13px;background:var(--green-bg);color:#166b45;display:flex;align-items:center;justify-content:center;font:800 18px var(--mono)")}>S</span>
+            <TokenIcon token="csteakcUSDC" size={46} />
             <h2 style={css("margin:0;font:800 26px/1.08 var(--display);letter-spacing:-.02em")}>{vaultName}</h2>
             <span style={css("padding:5px 11px;border-radius:999px;background:#f3edff;border:1px solid #e2d5ff;font:700 11px var(--display);color:#6b41c9;white-space:nowrap")}>Testnet replica</span>
           </div>
@@ -129,7 +130,7 @@ export function Vault() {
           {/* details */}
           <div style={css("margin-top:28px;border-top:1px solid var(--line)")}>
             <div style={css("display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>Curator</span><span style={css("font:650 13px var(--display);color:var(--ink)")}>{vaultCurator}</span></div>
-            <div style={css("display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>Collateral exposure</span><span style={css("display:inline-flex;align-items:center;gap:8px")}><span style={css("display:inline-flex;align-items:center;gap:6px;font:650 12.5px var(--display);color:var(--ink)")}><span style={css("width:18px;height:18px;border-radius:50%;background:#2775ca;color:#fff;display:flex;align-items:center;justify-content:center;font:700 8px var(--mono)")}>U</span>cUSDC</span><span style={css("display:inline-flex;align-items:center;gap:6px;font:650 12.5px var(--display);color:var(--ink)")}><span style={css("width:18px;height:18px;border-radius:50%;background:#3a3f4a;color:#fff;display:flex;align-items:center;justify-content:center;font:700 8px var(--mono)")}>W</span>cWETH</span></span></div>
+            <div style={css("display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>Collateral exposure</span><span style={css("display:inline-flex;align-items:center;gap:8px")}><span style={css("display:inline-flex;align-items:center;gap:6px;font:650 12.5px var(--display);color:var(--ink)")}><TokenIcon token="cUSDC" size={18} />cUSDC</span><span style={css("display:inline-flex;align-items:center;gap:6px;font:650 12.5px var(--display);color:var(--ink)")}><TokenIcon token="cWETH" size={18} />cWETH</span></span></div>
             <div style={css("display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>Share token</span><span style={css("font:650 13px var(--mono);color:var(--ink)")}>{vaultShare}</span></div>
           </div>
 
@@ -157,7 +158,7 @@ export function Vault() {
             <div style={css("display:flex;justify-content:space-between;align-items:center;margin-bottom:6px")}><span style={css("font:600 12px var(--display);color:var(--ink-2)")}>You deposit</span><span style={css("font:700 10px var(--mono);color:var(--ink-3);letter-spacing:.05em")}>MAX</span></div>
             <div style={css("display:flex;align-items:center;gap:10px")}>
               <input value={vaultAmt} onChange={(e) => setVaultAmt(e.target.value.replace(/[^0-9.]/g, ""))} inputMode="decimal" style={css("border:none;outline:none;background:none;font:750 28px var(--display);color:var(--ink);flex:1;min-width:0;padding:0;font-variant-numeric:tabular-nums")} />
-              <span style={css("display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-2);font:650 12.5px var(--mono);color:var(--ink);white-space:nowrap;flex:none")}><span style={css("width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font:700 8px var(--mono)")}>c</span>{vaultInTok}</span>
+              <span style={css("display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-2);font:650 12.5px var(--mono);color:var(--ink);white-space:nowrap;flex:none")}><TokenIcon token={vaultInTok} size={20} />{vaultInTok}</span>
             </div>
           </div>
           <div style={css("display:flex;align-items:center;justify-content:space-between;padding:12px 4px 2px")}><span style={css("font:500 12.5px var(--display);color:var(--ink-2)")}>You receive</span><span style={css("font:650 12.5px var(--mono);color:var(--ink)")}>≈ {vaultReceive.toFixed(2)} {vaultOutTok}</span></div>
