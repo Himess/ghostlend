@@ -115,27 +115,76 @@ A full read-only audit was run over this repo (contracts, frontend, scripts, con
 sound — mock test suite green (27/27), frontend type-clean, on-chain addresses consistent across frontend /
 deployments / keeper, and FHE ACL hygiene correct (every stored handle `allowThis` + `allow(user)`, outgoing
 transfers `allowTransient`, epoch/gate finalizers rebuild handles from storage with replay guards +
-`checkSignatures`). The issues below are **identified and documented, not hidden.** None affects the current
-seeded Sepolia deployment; they matter for future redeploys and specific edge cases, and fixes are planned
-post-submission.
+`checkSignatures`). The three findings below were **fixed and redeployed** in the current audit-fixed pool
+`0x1E7B` (with targeted regression tests) and never affected the seeded live deployment; the descriptions are
+retained here, transparently, as a record of what was found and how it was resolved.
 
-- **Epoch-brick on a zero-aggregate market (fix needs a redeploy).** `closeEpoch` has no on-chain guard
+- **Epoch-brick on a zero-aggregate market (fixed in redeploy).** `closeEpoch` has no on-chain guard
   against snapshotting an uninitialized/zero aggregate handle; the KMS `publicDecrypt` rejects a zero handle,
   which would freeze the epoch machine. **Mitigated operationally** in the live deployment: every market is
   seeded *before* its first `closeEpoch`, and the keeper only drives seeded markets — so it cannot occur here.
-  Planned fix: seed the aggregates to a non-zero baseline in the constructor, or gate `closeEpoch` on a
+  Fixed (current pool 0x1E7B): seed the aggregates to a non-zero baseline in the constructor, or gate `closeEpoch` on a
   plaintext activity counter and require non-null handles before revealing.
 - **Liquidation stale-snapshot edge case.** `finalizeLiquidation` seizes against the debt snapshot taken at
   `poke` time without re-checking current health, and there is no one-poke-per-position lock — so a borrower
-  who cures within the poke TTL, or a double-poke, could be over-seized. Planned fix: a single active poke per
+  who cures within the poke TTL, or a double-poke, could be over-seized. Fixed (current pool 0x1E7B): a single active poke per
   `(market, user)` + recompute health/seize from the *current* position at finalize.
 - **`deleverage` cash accounting.** On repayments grown by accrued interest, `availCash` can be credited more
   than `rebalanceQueue` is debited, so the "`availCash ≤ physical balance`" invariant can drift (the excess is
-  share-backed, not cash-backed). Planned fix: credit `availCash` only by the queue-covered portion.
+  share-backed, not cash-backed). Fixed (current pool 0x1E7B): credit `availCash` only by the queue-covered portion.
 
-These sit alongside the **boundary leaks already documented above** — participation/timing are public, the
+All three findings above were **fixed and redeployed** in the current audit-fixed pool
+`0x1E7Bc12dD59600Ec5A801942e84B26c5ffe860b7` (with targeted regression tests); the descriptions above are
+retained for transparency. These sit alongside the **boundary leaks already documented above** — participation/timing are public, the
 wrap/unwrap and net-routing steps cross the confidential↔public boundary, and batch anonymity is only *N−1*
 within a window — which are inherent to confidential lending on a public chain, not defects.
+
+## Limitations & Roadmap
+GhostLend is a Developer-Program checkpoint on Sepolia, not a production protocol. The core contracts
+(confidential lending, swap-free leverage, the epoch machine, liquidation, and GhostGate netting) are real,
+deployed, and Etherscan-verified — but the items below are **identified and transparent**, with production
+fixes planned. Framing them honestly is deliberate.
+
+**Interest rates**
+- **Epoch-lagged and keeper-dependent.** Utilization is the last *revealed* value, so rates lag one epoch by
+  design; in practice they are only as fresh as the off-chain keeper's last `finalizeEpoch` and *freeze* if
+  the keeper is down. There is no permissionless/incentivised rate update and no per-block accrual.
+  *Roadmap:* keeperless or incentivised epoch closing.
+- **IRM per-second-rate quantization.** The borrow rate is stored in 1e9 fixed-point *per second*, which
+  truncates to a small integer at low utilization — a nominal 4.5% APR at 50% util becomes ~3.15% *effective*
+  (this lower figure is what actually accrues on-chain, and what the Leverage carry math uses). *Roadmap:*
+  higher-precision rate storage.
+- **No interest has accrued on the live pool yet** (borrow/supply indices are still 1.0): there has been no
+  organic borrowing beyond seeding.
+
+**Liquidation**
+- **Fully implemented on-chain** (`poke` → KMS one-bit health reveal → `finalizeLiquidation` with `FHE.select`
+  seize + debt-wipe) **but never executed on the live deployment** (`nextPokeId = 0`) — exercised only in the
+  mock test-suite. No keeper-driven liquidation has run in production.
+
+**Vault yield**
+- **Simulated, not a real strategy.** `MockYieldVault` is the only mock in the Market-2 stack (labelled as
+  such in-contract and in the UI as a Steakhouse-Confidential-Prime *replica*). Yield is a keeper `mint()`
+  drip; share price is currently 1.0 (0% realized). The UI "APY" is cumulative share-price drift, not an
+  annualized rate. *Roadmap:* integrate a real confidential ERC-4626 strategy.
+
+**Oracles**
+- Only Chainlink ETH/USD; USDC is assumed = $1; the vault share price is a plaintext oracle (no Chainlink).
+  No staleness / deviation circuit-breakers yet.
+
+**Operations & config**
+- **A single off-chain keeper holds a hot key** and is the sole driver of epoch / liquidation / GhostGate
+  operation — no decentralization yet.
+- **Registry validation is OFF** for the production pool (csteakcUSDC is not in the Zama wrapper registry, so
+  the pool is constructed with `registry = address(0)`; the legacy registry-on core pool remains live).
+- Position size is capped at 1,000,000 tokens (euint64 math) and the interest index at 4× growth.
+
+**Frontend honesty**
+- Every money value, position, rate, utilization, vault share price, and GhostGate window state in the app is
+  a real on-chain read or confidential decrypt. The two remaining *explanatory* surfaces are explicitly
+  marked: the GhostGate netting comparison ("Illustrative example") and a "how it works" summary on the Status
+  screen. The Markets "Activity" tab shows no fabricated feed — it points to the pool's real transactions on
+  Etherscan (amounts stay encrypted).
 
 Design of record: `ARCHITECTURE.md` (v1.0 + amendment notes) + `ADDENDUM.md` (v1.1) + `BATCHER-NOTES.md`
 + the `zama-docs/` pack. See `CP2-STATUS.md` / `CP3-STATUS.md` / `CP4-STATUS.md`.

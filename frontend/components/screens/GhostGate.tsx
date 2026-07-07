@@ -118,6 +118,15 @@ export function GhostGate() {
         </div>
       </div>
 
+      {/* illustrative-example marker — the two-lane animation below is a conceptual diagram, not live data */}
+      <div style={css("display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px")}>
+        <span style={css("display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:#f3edff;border:1px solid #e2d5ff;color:#6b41c9;font:700 10.5px var(--display);letter-spacing:.04em;white-space:nowrap")}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 8v.5M12 11v5" /></svg>
+          Illustrative example
+        </span>
+        <span style={css("font:400 12px var(--display);color:var(--ink-3)")}>Conceptual figures showing how netting cuts on-chain-visible volume — not live data. Your live windows are below.</span>
+      </div>
+
       {/* two lanes */}
       <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px")}>
         {/* LANE A: vanilla */}
@@ -226,6 +235,15 @@ export function GhostGate() {
             <div style={css("height:12px;border-radius:999px;background:rgba(255,255,255,.09);overflow:hidden")}><div style={stat80FillStyle} /></div>
           </div>
         </div>
+      </div>
+
+      {/* live on-chain window data — real windowInfo reads, visually separated from the illustration above */}
+      <div style={css("display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:26px;margin-bottom:2px")}>
+        <span style={css("display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:#e7f4ec;border:1px solid #bfe3cd;color:#166b45;font:700 10.5px var(--display);letter-spacing:.04em;white-space:nowrap")}>
+          <span style={css("width:7px;height:7px;border-radius:50%;background:#2fbf7a")} />
+          Live · on-chain
+        </span>
+        <span style={css("font:400 12px var(--display);color:var(--ink-3)")}>Read directly from the GhostGate contract (windowInfo) on Sepolia — this is your real window state.</span>
       </div>
 
       {/* window + history */}

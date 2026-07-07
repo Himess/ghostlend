@@ -46,12 +46,15 @@ export function Vault() {
   const vaultShare = "csteakcUSDC";
   const vaultApy = vault.apy.toFixed(2);
   const vaultTotal = compact(Number(vault.totalAssets) / 1e6);
-  const vaultPerfFee = "10%";
+  const vaultSharePrice = (Number(vault.sharePrice6) / 1e6).toFixed(4); // real on-chain share price (yield proxy)
   const vaultCurator = "Steakhouse Financial · replicated on testnet";
   const vaultContract = shortAddr(ADDR.vault);
 
   const vaultInTok = vaultTab === "deposit" ? "cUSDC" : vaultShare;
   const vaultOutTok = vaultTab === "deposit" ? vaultShare : "cUSDC";
+  // You receive — priced off the REAL share price. deposit: cUSDC→shares = amt·1e6/sp ; withdraw: shares→cUSDC = amt·sp/1e6.
+  const vaultSp6 = Number(vault.sharePrice6) || 1e6;
+  const vaultReceive = (Number(vaultAmt) || 0) * (vaultTab === "deposit" ? 1e6 / vaultSp6 : vaultSp6 / 1e6);
   const vaultActionLabel = vaultTab === "deposit" ? "Confirm confidential deposit" : "Request confidential withdrawal";
   const moreDetailsLabel = moreDetails ? "HIDE DETAILS" : "MORE DETAILS";
 
@@ -120,7 +123,7 @@ export function Vault() {
           <div style={css("display:flex;flex-wrap:wrap;gap:22px 44px;margin-top:28px")}>
             <div style={css("display:flex;flex-direction:column;gap:5px")}><span style={css("font:650 10.5px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)")}>APY</span><span style={css("font:800 34px var(--display);letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1")}>{vaultApy}%</span></div>
             <div style={css("display:flex;flex-direction:column;gap:5px")}><span style={css("font:650 10.5px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)")}>Total deposits</span><span style={css("font:800 34px var(--display);letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1")}>{vaultTotal} <span style={css("font:600 14px var(--mono);color:var(--ink-3)")}>cUSDC</span></span></div>
-            <div style={css("display:flex;flex-direction:column;gap:5px")}><span style={css("font:650 10.5px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)")}>Performance fee</span><span style={css("font:800 34px var(--display);letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1")}>{vaultPerfFee}</span></div>
+            <div style={css("display:flex;flex-direction:column;gap:5px")}><span style={css("font:650 10.5px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)")}>Share price</span><span style={css("font:800 34px var(--display);letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1")}>{vaultSharePrice}</span></div>
           </div>
 
           {/* details */}
@@ -157,7 +160,7 @@ export function Vault() {
               <span style={css("display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-2);font:650 12.5px var(--mono);color:var(--ink);white-space:nowrap;flex:none")}><span style={css("width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font:700 8px var(--mono)")}>c</span>{vaultInTok}</span>
             </div>
           </div>
-          <div style={css("display:flex;align-items:center;justify-content:space-between;padding:12px 4px 2px")}><span style={css("font:500 12.5px var(--display);color:var(--ink-2)")}>You receive</span><span style={css("font:650 12.5px var(--mono);color:var(--ink)")}>≈ {vaultAmt} {vaultOutTok}</span></div>
+          <div style={css("display:flex;align-items:center;justify-content:space-between;padding:12px 4px 2px")}><span style={css("font:500 12.5px var(--display);color:var(--ink-2)")}>You receive</span><span style={css("font:650 12.5px var(--mono);color:var(--ink)")}>≈ {vaultReceive.toFixed(2)} {vaultOutTok}</span></div>
 
           {/* batch banner */}
           <div style={css("margin-top:12px;border:1px solid #f0d97a;background:var(--accent-soft);border-radius:14px;padding:13px 15px")}>

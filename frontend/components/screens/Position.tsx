@@ -5,7 +5,7 @@ import { useGrantPermit, useHasPermit, useDecryptValues } from "@zama-fhe/react-
 import { css } from "@/lib/css";
 import { DOTS, fmtUnits6 } from "@/lib/format";
 import { ADDR, MARKETS, PERMIT_CONTRACTS, type MarketDef } from "@/lib/addresses";
-import { usePositionHandles } from "@/lib/hooks";
+import { usePositionHandles, useEthPrice, useVaultStats, tokenUsdPerUnit } from "@/lib/hooks";
 import { useToast } from "@/components/Toast";
 
 // cWETH / cUSDC / csteakcUSDC token-pair chip colors + initials (csteakcUSDC -> "S", else the 2nd letter).
@@ -24,12 +24,14 @@ function valStyle(revealed: boolean) {
 
 function PositionCard({ market }: { market: MarketDef }) {
   const toast = useToast();
-  const { collateral, scaledDebt, scaledSupply } = usePositionHandles(market.id);
+  const { collateral, scaledDebt, scaledSupply, lastError } = usePositionHandles(market.id);
+  const ethUsd = useEthPrice();
+  const { sharePrice6 } = useVaultStats();
   const { mutateAsync: grantPermit } = useGrantPermit();
   const { data: hasPermit } = useHasPermit({ contractAddresses: PERMIT_CONTRACTS });
   const [wantDecrypt, setWantDecrypt] = useState(false);
 
-  const handlesReady = !!collateral && !!scaledDebt && !!scaledSupply;
+  const handlesReady = !!collateral && !!scaledDebt && !!scaledSupply && !!lastError;
   const inputs = useMemo(
     () =>
       handlesReady
@@ -37,29 +39,32 @@ function PositionCard({ market }: { market: MarketDef }) {
             { encryptedValue: collateral!, contractAddress: ADDR.pool as `0x${string}` },
             { encryptedValue: scaledDebt!, contractAddress: ADDR.pool as `0x${string}` },
             { encryptedValue: scaledSupply!, contractAddress: ADDR.pool as `0x${string}` },
+            { encryptedValue: lastError!, contractAddress: ADDR.pool as `0x${string}` },
           ]
         : [],
-    [handlesReady, collateral, scaledDebt, scaledSupply],
+    [handlesReady, collateral, scaledDebt, scaledSupply, lastError],
   );
   // REAL relayer/KMS decrypt — enabled only once the user clicks Decrypt (and a valid permit exists).
   const { data } = useDecryptValues(inputs, { enabled: wantDecrypt && handlesReady });
 
   const revealed =
-    wantDecrypt && handlesReady && !!data && collateral! in data && scaledDebt! in data && scaledSupply! in data;
+    wantDecrypt && handlesReady && !!data && collateral! in data && scaledDebt! in data && scaledSupply! in data && lastError! in data;
   const decrypting = wantDecrypt && !revealed;
   const locked = !wantDecrypt;
 
   const collVal = revealed ? (data![collateral!] as bigint) : undefined;
   const debtVal = revealed ? (data![scaledDebt!] as bigint) : undefined;
   const supplyVal = revealed ? (data![scaledSupply!] as bigint) : undefined;
+  const errVal = revealed ? (data![lastError!] as bigint) : undefined; // per-op error flag (0 = E_OK)
 
-  // HF = (collateral * LLTV) / debt — computed locally from the values you just decrypted, never on-chain.
+  // HF = (collateral USD × LLTV) / debt USD — oracle-priced via tokenUsdPerUnit (the SAME valuation the
+  // Markets borrow-preview uses), so it is dimensionally correct across the cross-asset markets rather
+  // than a naive same-unit ratio. Still computed locally from the values you just decrypted (on-chain
+  // they stay encrypted); only the price dimension is now correct.
+  const collUsd = collVal != null ? Number(collVal) * tokenUsdPerUnit(market.coll, ethUsd, sharePrice6) : null;
+  const debtUsd = debtVal != null ? Number(debtVal) * tokenUsdPerUnit(market.borrow, ethUsd, sharePrice6) : null;
   const hfRatio =
-    collVal != null && debtVal != null
-      ? debtVal === 0n
-        ? Infinity
-        : ((Number(collVal) / 1e6) * (market.lltv / 100)) / (Number(debtVal) / 1e6)
-      : null;
+    collUsd != null && debtUsd != null ? (debtUsd === 0 ? Infinity : (collUsd * (market.lltv / 100)) / debtUsd) : null;
   const hfShown = !revealed ? DOTS : hfRatio == null ? "—" : hfRatio === Infinity ? "∞" : hfRatio.toFixed(2);
   const hpct = hfRatio == null ? 0 : Math.max(0, Math.min(100, Math.round((Math.min(hfRatio, 2) / 2) * 100)));
   const hColor = hpct >= 66 ? "var(--green)" : hpct >= 42 ? "var(--amber)" : "var(--red)";
@@ -110,10 +115,18 @@ function PositionCard({ market }: { market: MarketDef }) {
         </div>
         <div style={css("margin-left:auto;display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end")}>
           {market.id === 2 && (
-            <span style={css("padding:4px 10px;border-radius:999px;background:var(--panel);color:#f3f1ec;font:700 11px var(--mono)")}>3× loop</span>
+            <span style={css("padding:4px 10px;border-radius:999px;background:var(--panel);color:#f3f1ec;font:700 11px var(--mono)")}>leverage market</span>
           )}
           {revealed && (
-            <span style={css("padding:5px 11px;border-radius:999px;background:#e7f4ec;color:#166b45;font:700 11px var(--display);white-space:nowrap")}>OK</span>
+            <span
+              style={css(
+                errVal === 0n
+                  ? "padding:5px 11px;border-radius:999px;background:#e7f4ec;color:#166b45;font:700 11px var(--display);white-space:nowrap"
+                  : "padding:5px 11px;border-radius:999px;background:#fbeede;color:#8a5a00;font:700 11px var(--display);white-space:nowrap",
+              )}
+            >
+              {errVal === 0n ? "OK" : "CLAMPED"}
+            </span>
           )}
         </div>
       </div>

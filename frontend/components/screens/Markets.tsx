@@ -6,7 +6,7 @@ import { css } from "@/lib/css";
 import { useNav, MarketAction } from "@/lib/nav";
 import { useEthPrice, useMarketsLive, useVaultStats, tokenUsdPerUnit } from "@/lib/hooks";
 import { compact, shortAddr, DOTS } from "@/lib/format";
-import { ADDR, MARKETS } from "@/lib/addresses";
+import { ADDR, MARKETS, EXPLORER } from "@/lib/addresses";
 import { poolAbi } from "@/lib/abis";
 import { useToast } from "@/components/Toast";
 
@@ -58,18 +58,6 @@ const OP_MAP: Record<MarketAction, "supply" | "withdrawSupply" | "depositCollate
   supply: "supply", withdraw: "withdrawSupply", deposit: "depositCollateral", borrow: "borrow", repay: "repay",
 };
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
-
-// Illustrative deployment dates — the pool contract exposes no market-creation timestamp on-chain.
-const CREATED: Record<number, string> = { 0: "2026-05-12", 1: "2026-05-12", 2: "2026-06-19" };
-
-// Illustrative only. A production build reads the pool's OpExecuted(user, marketId, nonce) events
-// (see poolAbi) per marketId to populate this feed — amounts stay encrypted end-to-end either way.
-const ACTIVITY_FEED: { type: string; addr: string; time: string }[] = [
-  { type: "Borrow", addr: "0x3a7e19c4b2f68d05a1e93c7f4b6a8d2e5c0f9b31", time: "2m ago" },
-  { type: "Supply", addr: "0x91c4a27f8e3b5d0c6a9f1e4b7d2c8a5f3e0b6d19", time: "9m ago" },
-  { type: "Deposit collateral", addr: "0x5e21b8f4a2d69c0e3f7b1a5d8c2e6f0b4a9d3c71", time: "23m ago" },
-  { type: "Repay", addr: "0xbe10f3c6a9e25d8b1f4a7c0e3d6b9a2f5c8e1b40", time: "41m ago" },
-];
 
 // ==================================================================================
 // LIST
@@ -131,7 +119,7 @@ function MarketList() {
                 <div style={css("padding:14px 22px 0")}>
                   <span style={css("display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);font:600 11px var(--mono);color:var(--ink-2)")}>
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 8v4l3 2" /></svg>
-                    rates update in ~5m
+                    rates update per epoch
                   </span>
                 </div>
                 <div style={css("display:flex;gap:9px;padding:18px 22px 22px;margin-top:8px")}>
@@ -290,7 +278,6 @@ function MarketDetail({ marketId }: { marketId: number }) {
                   <div style={css("display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>Loan</span><span style={css("font:650 13px var(--display);color:var(--ink);display:inline-flex;align-items:center;gap:7px")}><span style={css("width:18px;height:18px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font:700 8px var(--mono)")}>c</span>{md.borrow}</span></div>
                   <div style={css("display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>Utilization</span><span style={css("font:650 13px var(--display);color:var(--ink)")}>{(util / 100).toFixed(0)}% <span style={css("font:400 11px var(--display);color:var(--ink-3)")}>· per-epoch</span></span></div>
                   <div style={css("display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>LLTV</span><span style={css("font:650 13px var(--mono);color:var(--ink)")}>{md.lltv}%</span></div>
-                  <div style={css("display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)")}><span style={css("font:500 13px var(--display);color:var(--ink-2)")}>Created on</span><span style={css("font:650 13px var(--mono);color:var(--ink)")}>{CREATED[md.id]}</span></div>
                 </div>
               </div>
               <div style={css("margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px 24px;display:flex;align-items:center;gap:22px;flex-wrap:wrap;box-shadow:0 1px 2px rgba(20,18,12,.03)")}>
@@ -307,19 +294,19 @@ function MarketDetail({ marketId }: { marketId: number }) {
           )}
 
           {detailTab === "activity" && (
-            <div style={css("margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 1px 2px rgba(20,18,12,.03)")}>
-              <div style={css("display:grid;grid-template-columns:1.3fr 1.3fr 1fr .8fr;padding:13px 22px;border-bottom:1px solid var(--line);font:650 10px var(--display);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)")}><span>Event</span><span>Address</span><span>Amount</span><span style={css("text-align:right")}>Time</span></div>
-              {ACTIVITY_FEED.map((a, i) => (
-                <div key={i} style={css("display:grid;grid-template-columns:1.3fr 1.3fr 1fr .8fr;padding:14px 22px;border-bottom:1px solid var(--line);align-items:center")}>
-                  <span><span style={css("display:inline-flex;padding:4px 10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);font:650 11.5px var(--display);color:var(--ink-2);white-space:nowrap")}>{a.type}</span></span>
-                  <span style={css("font:600 12.5px var(--mono);color:var(--ink-2)")}>{shortAddr(a.addr)}</span>
-                  <span style={css("display:inline-flex;align-items:center;gap:6px;font:700 13px var(--mono);color:var(--ink-3)")}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5" /><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" /></svg>{DOTS}</span>
-                  <span style={css("font:500 12px var(--display);color:var(--ink-3);text-align:right")}>{a.time}</span>
+            <div style={css("margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 24px;box-shadow:0 1px 2px rgba(20,18,12,.03)")}>
+              <div style={css("display:flex;align-items:flex-start;gap:12px")}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={css("flex:none;margin-top:2px")}><rect x="5" y="10.5" width="14" height="9.5" rx="2.5" /><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" /></svg>
+                <div style={css("display:flex;flex-direction:column;gap:9px")}>
+                  <span style={css("font:750 15px var(--display);color:var(--ink)")}>No public activity table — by design</span>
+                  <p style={css("margin:0;font:400 13.5px/1.6 var(--display);color:var(--ink-2);max-width:60ch")}>
+                    Positions are confidential (ERC-7984): amounts — and even the operation type — are encrypted on-chain, and only <b style={css("color:var(--ink);font-weight:600")}>per-epoch aggregates</b> are ever revealed. There is no on-chain table of who did what for how much. The raw <b style={css("color:var(--ink);font-weight:600")}>OpExecuted</b> transactions (sender + block time; amounts stay encrypted) are verifiable directly on Etherscan.
+                  </p>
+                  <a href={`${EXPLORER}/address/${ADDR.pool}`} target="_blank" rel="noreferrer" style={css("display:inline-flex;align-items:center;gap:7px;font:650 12.5px var(--display);color:#8a6d00;text-decoration:none")}>
+                    View pool transactions on Etherscan
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17L17 7M7 7h10v10" /></svg>
+                  </a>
                 </div>
-              ))}
-              <div style={css("padding:13px 22px;font:400 12px var(--display);color:var(--ink-3);display:flex;align-items:center;gap:8px")}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5" /><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" /></svg>
-                Amounts are encrypted on-chain — the feed shows only event type, address and time.
               </div>
             </div>
           )}

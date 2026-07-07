@@ -6,7 +6,7 @@ import { css } from "@/lib/css";
 import { DOTS } from "@/lib/format";
 import { ADDR } from "@/lib/addresses";
 import { poolAbi } from "@/lib/abis";
-import { useMarketsLive, useVaultStats, usePositionHandles } from "@/lib/hooks";
+import { useVaultStats, usePositionHandles, useEffectiveBorrowApr } from "@/lib/hooks";
 import { useToast } from "@/components/Toast";
 
 const MARKET_ID = 2; // csteakcUSDC loop — vault-priced market
@@ -21,7 +21,6 @@ const EncBadge = () => (
 export function Leverage() {
   const { address, isConnected } = useAccount();
   const push = useToast();
-  const { markets } = useMarketsLive();
   const vault = useVaultStats();
   const { mutateAsync: setOperator } = useConfidentialSetOperator(ADDR.cUSDC as `0x${string}`);
   const { mutateAsync: encrypt } = useEncrypt();
@@ -38,17 +37,16 @@ export function Leverage() {
   const debt = D * (levClamped - 1);
   const collateral = positionSize;
   const dcr = levClamped > 0 ? ((levClamped - 1) / levClamped) * 100 : 0;
-  const netCarry = (levClamped - 1) * 2.1;
   const levPct = ((levClamped - 1) / 3) * 100;
   const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
   const dcrStr = dcr.toFixed(1);
-  const netCarryStr = (netCarry >= 0 ? "+" : "") + netCarry.toFixed(1);
   const levPctStr = levPct.toFixed(2);
 
-  // ---- real carry inputs ----
-  const m2 = markets.find((m) => m.id === MARKET_ID);
-  const vaultApy = vault.apy;
-  const aprM2 = m2?.apr ?? 0;
+  // ---- real carry inputs — net carry is COMPUTED from these, never a hardcoded literal ----
+  const vaultApy = vault.apy; // vault yield = sharePrice drift (useVaultStats)
+  const aprM2 = useEffectiveBorrowApr(MARKET_ID); // effective on-chain APR (pool.leverageCarry), not nominal
+  const netCarry = levClamped * vaultApy - (levClamped - 1) * aprM2; // lev·APY − (lev−1)·APR
+  const netCarryStr = (netCarry >= 0 ? "+" : "") + netCarry.toFixed(1);
 
   // Real chain read: does the connected wallet actually hold a Market-2 position? `positionOf` returns a
   // bytes32(0) collateral handle for a never-opened position, so gate the "Open positions" card on it —
@@ -56,7 +54,6 @@ export function Leverage() {
   const { collateral: m2Coll } = usePositionHandles(MARKET_ID);
   const hasPosition = isConnected && !!m2Coll && m2Coll.toLowerCase() !== "0x" + "0".repeat(64);
 
-  const setMax = () => setDepositAmt("25000");
 
   async function openLev() {
     if (!isConnected || !address) { push("Connect your wallet first", "err"); return; }
@@ -129,7 +126,6 @@ export function Leverage() {
               style={css("border:none;outline:none;background:none;font:750 38px var(--display);letter-spacing:-.02em;color:var(--ink);flex:1 1 150px;min-width:130px;padding:0;font-variant-numeric:tabular-nums")}
             />
             <div style={css("display:flex;align-items:center;gap:8px;flex:none")}>
-              <button onClick={setMax} style={css("padding:6px 11px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface-2);font:700 11px var(--display);letter-spacing:.05em;color:var(--ink-2);cursor:pointer")}>MAX</button>
               <span style={css("display:inline-flex;align-items:center;gap:8px;padding:7px 14px 7px 8px;border-radius:999px;background:var(--surface);border:1px solid var(--line-2);font:650 14px var(--display);color:var(--ink)")}>
                 <span style={css("width:22px;height:22px;border-radius:50%;background:#2775ca;color:#fff;display:flex;align-items:center;justify-content:center;font:700 11px var(--mono)")}>c</span>cUSDC
               </span>

@@ -56,6 +56,19 @@ export function useMarketsLive() {
   return { markets, isLoading, refetch };
 }
 
+// Effective on-chain borrow APR (%) for a market. The pool's leverageCarry() annualizes the STORED
+// per-second rate (1e9 fixed-point), which truncates vs the nominal IRM curve — this is what interest
+// actually accrues at on-chain. lev/vaultApy args don't affect the returned borrowAprBps, so pass (2, 0).
+export function useEffectiveBorrowApr(marketId: number): number {
+  const { data } = useReadContract({
+    ...POOL,
+    functionName: "leverageCarry",
+    args: [marketId, 2, 0],
+    query: { refetchInterval: 15000 },
+  });
+  return data ? Number((data as any)[0]) / 100 : 0;
+}
+
 // ---- GhostGate current window ----
 export function useGhostGate() {
   const gate = { address: ADDR.gate as `0x${string}`, abi: gateAbi };
