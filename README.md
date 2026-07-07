@@ -152,8 +152,11 @@ fixes planned. Framing them honestly is deliberate.
   *Roadmap:* keeperless or incentivised epoch closing.
 - **IRM per-second-rate quantization.** The borrow rate is stored in 1e9 fixed-point *per second*, which
   truncates to a small integer at low utilization — a nominal 4.5% APR at 50% util becomes ~3.15% *effective*
-  (this lower figure is what actually accrues on-chain, and what the Leverage carry math uses). *Roadmap:*
-  higher-precision rate storage.
+  (this lower figure is what actually accrues on-chain, and what the Leverage carry math uses). The **supply
+  side truncates all the way to zero** at these utilizations (`borrowRatePerSec(=1) × util(5000) ×
+  (1−reserve)(9000) / 1e8 = 0.45 → 0`), so **suppliers currently earn no on-chain interest** and `supplyIndex`
+  stays at 1.0 while `borrowIndex` grows. Same quantization class as the borrow side. *Roadmap:* higher-precision
+  index/rate storage (e.g. 1e12) so the supply rate no longer rounds to zero.
 - **No interest has accrued on the live pool yet** (borrow/supply indices are still 1.0): there has been no
   organic borrowing beyond seeding.
 
