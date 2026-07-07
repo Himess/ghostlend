@@ -35,6 +35,18 @@ async function runEpoch(pool: any, marketId: number) {
   try {
     if (await finalizeFromLog(pool, marketId, epochId)) console.log(`  [epoch] market ${marketId} epoch ${epochId} finalized (recovered)`);
   } catch (e: any) { console.log(`  [epoch] market ${marketId} recover(${epochId}): ${e.shortMessage || e.message?.split("\n")[0]}`); }
+  // H-1 skip-guard: never call closeEpoch on a market whose aggregate handles are still the null handle —
+  // makePubliclyDecryptable on a null handle freezes a snapshot the KMS rejects → the epoch machine bricks.
+  // (New pools baseline these to a real zero handle, so this only trips on a legacy/never-seeded market.)
+  try {
+    const info = await pool.marketInfo(marketId);
+    if (info[8] === ethers.ZeroHash || info[9] === ethers.ZeroHash) {
+      console.log(`  [epoch] market ${marketId} skipped: aggregates uninitialized (seed before first close)`);
+      return;
+    }
+  } catch {
+    /* marketInfo read failed — fall through; closeEpoch has its own on-chain guard */
+  }
   // 2) close the next epoch if its duration has elapsed, then finalize it this pass
   try {
     const rc = await (await pool.closeEpoch(marketId)).wait();

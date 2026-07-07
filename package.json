@@ -78,7 +78,7 @@
     "postcompile": "npm run typechain",
     "prettier:check": "prettier --check \"**/*.{js,json,md,sol,ts,yml}\"",
     "prettier:write": "prettier --write \"**/*.{js,json,md,sol,ts,yml}\"",
-    "test": "hardhat test test/FHECounter.ts test/GhostLendPool.ts test/GhostLendPool.cp2.ts test/Market2Batcher.ts test/Market2Leverage.ts test/Market2WithdrawBatcher.ts test/GhostGate.ts",
+    "test": "hardhat test test/FHECounter.ts test/GhostLendPool.ts test/GhostLendPool.cp2.ts test/Market2Batcher.ts test/Market2Leverage.ts test/Market2WithdrawBatcher.ts test/GhostGate.ts test/GhostLendPool.audit.ts",
     "test:all": "hardhat test",
     "test:sepolia": "hardhat test --network sepolia",
     "deploy:all": "hardhat run scripts/deploy-all.ts --network sepolia",

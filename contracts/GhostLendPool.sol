@@ -68,6 +68,7 @@ contract GhostLendPool is ZamaEthereumConfig, ReentrancyGuard {
         uint64 borrowRateRayPerSec;
         uint40 lastAccrual;
         uint32 lastUtilizationBps;
+        bool activated; // set on first supply/borrow/leverage — the closeEpoch has-activity gate (H-1)
         euint64 aggScaledSupply; // allowThis-only (for epoch reveal, CP2)
         euint64 aggScaledBorrow; // allowThis-only
         euint64 availCash; // physical lendable liquidity (allowThis-only); ≤ pool debt-token balance
@@ -131,6 +132,9 @@ contract GhostLendPool is ZamaEthereumConfig, ReentrancyGuard {
     }
     mapping(uint256 => Poke) internal pokes;
     uint256 public nextPokeId;
+    // H-2: one active poke per (market,user). Blocks a second poke until the first is finalized or its TTL
+    // expires — prevents the double-poke double-seize. Set to pokedAt+TTL on poke, cleared to 0 on finalize.
+    mapping(uint8 => mapping(address => uint40)) public pokeBlockedUntil;
     mapping(uint8 => euint64) internal reserves; // pool-owned seized collateral bucket
 
     event EpochClosed(uint8 indexed marketId, uint64 indexed epochId, bytes32 supplySnap, bytes32 borrowSnap);
@@ -174,6 +178,17 @@ contract GhostLendPool is ZamaEthereumConfig, ReentrancyGuard {
             m.borrowIndex = INDEX_ONE;
             m.supplyIndex = INDEX_ONE;
             m.lastAccrual = uint40(block.timestamp);
+            // H-1: baseline the aggregate + cash handles to a REAL trivial-encryption-of-0 handle (NOT the
+            // null handle). A never-touched market otherwise leaves these as bytes32(0); closeEpoch would then
+            // makePubliclyDecryptable a null handle that the KMS rejects → the epoch machine bricks (exactly
+            // the bug that bricked an earlier pool, including the supply-with-no-borrows case where only
+            // aggScaledBorrow is null). A trivial 0 is decryptable and adds ZERO skew to utilization.
+            m.aggScaledSupply = FHE.asEuint64(0);
+            m.aggScaledBorrow = FHE.asEuint64(0);
+            m.availCash = FHE.asEuint64(0);
+            FHE.allowThis(m.aggScaledSupply);
+            FHE.allowThis(m.aggScaledBorrow);
+            FHE.allowThis(m.availCash);
             marketCount = id + 1;
             emit MarketAdded(id, c.collateralToken, c.debtToken, c.lltvBps);
         }
@@ -310,6 +325,7 @@ contract GhostLendPool is ZamaEthereumConfig, ReentrancyGuard {
     function supply(uint8 marketId, externalEuint64 extAmt, bytes calldata proof) external nonReentrant {
         Market storage m = markets[marketId];
         _accrue(m);
+        m.activated = true; // H-1: real activity → closeEpoch permitted
         euint64 amt = _prologue(extAmt, proof);
         euint64 transferred = _pullClamped(m.debtToken, msg.sender, amt);
 
@@ -376,6 +392,7 @@ contract GhostLendPool is ZamaEthereumConfig, ReentrancyGuard {
     function borrow(uint8 marketId, externalEuint64 extAmt, bytes calldata proof) external nonReentrant {
         Market storage m = markets[marketId];
         _accrue(m);
+        m.activated = true; // H-1: real activity → closeEpoch permitted
         euint64 amt = _prologue(extAmt, proof);
         Position storage p = positions[marketId][msg.sender];
         (uint256 kDenCredit, ) = _coefficients(m);
@@ -463,6 +480,14 @@ contract GhostLendPool is ZamaEthereumConfig, ReentrancyGuard {
     function closeEpoch(uint8 marketId) external returns (uint64 epochId) {
         Market storage m = markets[marketId];
         require(block.timestamp >= lastEpochClose[marketId] + epochDuration, "too soon");
+        // H-1: never close/reveal a market with no real activity, and never snapshot a null aggregate handle.
+        // The first guard blocks empty markets (a baseline-only snapshot would compute a meaningless util);
+        // the second is defense-in-depth — with the constructor baseline both handles are always non-null.
+        require(m.activated, "no activity");
+        require(
+            euint64.unwrap(m.aggScaledSupply) != bytes32(0) && euint64.unwrap(m.aggScaledBorrow) != bytes32(0),
+            "agg uninit"
+        );
         epochId = currentEpochId[marketId];
         require(epochs[marketId][epochId].status != EpochStatus.Pending, "prev pending");
         _accrue(m);
@@ -521,6 +546,9 @@ contract GhostLendPool is ZamaEthereumConfig, ReentrancyGuard {
     /// Permissionless. Reveals ONE bit: is the position unhealthy? (debtActual > collateral·LLTV).
     /// The keeper pokes every open position each epoch uniformly, so a poke carries no information.
     function poke(uint8 marketId, address user) external returns (uint256 pokeId) {
+        // H-2: single active poke per position. A stale poke (past TTL, never finalized) stops blocking so a
+        // position can always be re-poked; a finalize clears the block immediately.
+        require(block.timestamp >= pokeBlockedUntil[marketId][user], "poke pending");
         Market storage m = markets[marketId];
         _accrue(m);
         Position storage p = positions[marketId][user];
@@ -542,6 +570,7 @@ contract GhostLendPool is ZamaEthereumConfig, ReentrancyGuard {
         pk.collSnap = p.collateral;
         pk.borrowIndexSnap = m.borrowIndex;
         pk.pokedAt = uint40(block.timestamp);
+        pokeBlockedUntil[marketId][user] = uint40(block.timestamp) + POKE_TTL; // H-2: block re-poke until finalize/TTL
         FHE.allowThis(pk.debtSnap);
         FHE.allowThis(pk.collSnap);
         emit Poked(pokeId, marketId, user, FHE.toBytes32(unhealthy));
@@ -562,17 +591,29 @@ contract GhostLendPool is ZamaEthereumConfig, ReentrancyGuard {
         if (unhealthy) {
             Market storage m = markets[pk.marketId];
             Position storage p = positions[pk.marketId][pk.user];
-            (, uint256 kDenRequired) = _coefficients(m);
+            _accrue(m); // H-2: accrue to the CURRENT index before re-checking health
+            (uint256 kDenCredit, uint256 kDenRequired) = _coefficients(m); // CURRENT price
 
-            euint64 debtActual = _actualUp(pk.debtSnap, pk.borrowIndexSnap);
-            // seize collateral worth debt·(1 + liqBonus). Smaller denominator → more collateral seized.
+            // H-2: re-check health against the LIVE position (current collateral/debt/price/index), NOT the
+            // frozen poke snapshot. A borrower who repaid, or whose collateral price recovered, between poke
+            // and finalize is no longer unhealthy → `stillUnhealthy` is false → seize 0 and leave the debt
+            // intact. Together with the single-active-poke lock this closes the cured-borrower over-seize and
+            // the double-poke double-seize (a second finalize sees debt already 0 ⇒ nothing left to seize).
+            euint64 curCreditLimit = FHE.min(_mulDivScalar(_cap(p.collateral), COEF_NUM, kDenCredit), MAX_AMOUNT);
+            euint64 curDebtActual = _actualUp(p.scaledDebt, m.borrowIndex);
+            ebool stillUnhealthy = FHE.lt(curCreditLimit, curDebtActual);
+
+            // Seize collateral worth CURRENT debt·(1 + liqBonus), gated on live health. Smaller denominator →
+            // more collateral seized.
             uint256 seizeDen = (kDenRequired * BPS) / (BPS + m.liqBonusBps);
             if (seizeDen == 0) seizeDen = 1;
-            euint64 seize = FHE.min(_mulDivScalar(debtActual, COEF_NUM, seizeDen), _cap(pk.collSnap));
+            euint64 seizeRaw = FHE.min(_mulDivScalar(curDebtActual, COEF_NUM, seizeDen), _cap(p.collateral));
+            euint64 seize = FHE.select(stillUnhealthy, seizeRaw, _e(0));
+            euint64 debtCleared = FHE.select(stillUnhealthy, p.scaledDebt, _e(0));
 
-            (, p.collateral) = p.collateral.tryDecrease(seize); // seize collateral
-            (, m.aggScaledBorrow) = m.aggScaledBorrow.tryDecrease(p.scaledDebt); // clear from aggregate
-            p.scaledDebt = _e(0); // wipe debt (shortfall socialized to lenders — documented)
+            (, p.collateral) = p.collateral.tryDecrease(seize); // seize collateral (0 if cured)
+            (, m.aggScaledBorrow) = m.aggScaledBorrow.tryDecrease(debtCleared); // clear only the current debt
+            p.scaledDebt = FHE.select(stillUnhealthy, _e(0), p.scaledDebt); // wipe debt only if still unhealthy
             reserves[pk.marketId] = FHE.add(reserves[pk.marketId], seize);
 
             FHE.allowThis(p.collateral);
@@ -582,6 +623,7 @@ contract GhostLendPool is ZamaEthereumConfig, ReentrancyGuard {
             FHE.allowThis(m.aggScaledBorrow);
             FHE.allowThis(reserves[pk.marketId]);
         }
+        pokeBlockedUntil[pk.marketId][pk.user] = 0; // H-2: poke resolved → allow the position to be re-poked
         pk.status = PokeStatus.Done;
         emit LiquidationFinalized(pokeId, unhealthy);
     }
@@ -613,6 +655,7 @@ contract GhostLendPool is ZamaEthereumConfig, ReentrancyGuard {
         Market storage m = markets[marketId];
         require(m.vault != address(0), "not a vault market");
         _accrue(m);
+        m.activated = true; // H-1: real activity → closeEpoch permitted
         Position storage p = positions[marketId][msg.sender];
 
         euint64 deposited = _pullClamped(m.debtToken, msg.sender, FHE.min(FHE.fromExternal(extDeposit, proof), MAX_AMOUNT));
@@ -684,8 +727,13 @@ contract GhostLendPool is ZamaEthereumConfig, ReentrancyGuard {
         euint64 scaledRepaid = _scaledDown(debtRepaid, m.borrowIndex);
         (, p.scaledDebt) = p.scaledDebt.tryDecrease(scaledRepaid);
         (, m.aggScaledBorrow) = m.aggScaledBorrow.tryDecrease(scaledRepaid);
-        (, m.rebalanceQueue) = m.rebalanceQueue.tryDecrease(debtRepaid); // earmark cleared
-        m.availCash = FHE.add(m.availCash, debtRepaid); // freed by the share-backed repayment
+        // M-1: only the portion of the repayment actually earmarked as cash-owed (rebalanceQueue) frees real
+        // availCash. Accrued interest can grow debtRepaid beyond the originally-queued amount; that excess is
+        // repaid by the shares returned to the treasury (share-backed), NOT by cUSDC — crediting it to
+        // availCash would break the `availCash ≤ physical cUSDC` invariant. Move cash and queue by the SAME min.
+        euint64 cashFreed = FHE.min(debtRepaid, m.rebalanceQueue);
+        (, m.rebalanceQueue) = m.rebalanceQueue.tryDecrease(cashFreed); // exact (cashFreed ≤ queue)
+        m.availCash = FHE.add(m.availCash, cashFreed); // only the cash-backed portion
 
         FHE.allowTransient(payout, address(m.debtToken));
         m.debtToken.confidentialTransfer(msg.sender, payout);
