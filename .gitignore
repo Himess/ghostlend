@@ -42,3 +42,8 @@ deployments/localhost
 # vercel
 .vercel
 **/.vercel
+
+# reference material — kept local, not shipped in the repo
+zama-docs/
+frontend/AGENT-SPEC.md
+_designbrief/

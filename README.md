@@ -331,7 +331,7 @@ Honest by design — a Developer-Program checkpoint, not a finished mainnet prot
 - **Batch anonymity is N−1** within a `minBatchAge` window; participation/timing are public.
 - **Single off-chain keeper** with a hot key drives epoch/liquidation/gate — not yet decentralized.
 
-Full design-of-record: [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`ADDENDUM.md`](./ADDENDUM.md) · [`BATCHER-NOTES.md`](./BATCHER-NOTES.md) · [`deployments/ADDRESSES.md`](./deployments/ADDRESSES.md)
+Full design-of-record: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) · [`docs/ADDENDUM.md`](./docs/ADDENDUM.md) · [`docs/BATCHER-NOTES.md`](./docs/BATCHER-NOTES.md) · [`deployments/ADDRESSES.md`](./deployments/ADDRESSES.md)
 
 ---
 
