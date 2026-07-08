@@ -104,6 +104,18 @@ graph TB
 
 *Native lending needs no bridge, so it's instant. We batch **only** where confidential value crosses to public — the same design as Zama's own vault (60s window on testnet, ~12h on mainnet).*
 
+### Epoch rate machine — async reveals, handled
+
+Rates lag one epoch **by design**: utilization is only ever revealed as a *public aggregate*, once per epoch — individual positions never are.
+
+```mermaid
+graph LR
+    C["closeEpoch<br/>snapshot encrypted aggregates"] --> M["makePubliclyDecryptable"]
+    M --> D["KMS publicDecrypt<br/>(off-chain, ~3s)"]
+    D --> F["finalizeEpoch<br/>checkSignatures → set borrow rate"]
+    F -. "next epoch · 300s gate" .-> C
+```
+
 ---
 
 ## 🔱 The three pillars
