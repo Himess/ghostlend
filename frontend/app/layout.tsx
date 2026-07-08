@@ -5,6 +5,7 @@ import { Providers } from "./providers";
 export const metadata: Metadata = {
   title: "GhostLend — confidential lending & leverage",
   description: "Confidential lending, vault-collateralized leverage, and GhostGate netting on Zama FHEVM (Sepolia).",
+  icons: { icon: "/icon.svg", shortcut: "/icon.svg", apple: "/icon.svg" },
 };
 
 // Fully client-rendered dApp (wallet + FHE SDK) — render on demand, don't statically prerender at build.
