@@ -188,6 +188,8 @@ sequenceDiagram
 
 Health is evaluated on ciphertext; the **only** value ever decrypted is a single healthy/unhealthy boolean, threshold-decrypted by the KMS and verified onchain. A borrower who cured between `poke` and `finalize` is seized **zero** — branchlessly.
 
+> **✅ Verified live on Sepolia.** A real liquidation executed end-to-end — no faked health, no oracle manipulation: [`poke`](https://sepolia.etherscan.io/tx/0x3b047826fea06953fa809cf0581bac80990e53c037b450d126b558062b9b401f) → KMS one-bit decrypt → [`finalizeLiquidation`](https://sepolia.etherscan.io/tx/0x16c4678b03c466e4401e98876b564749404c3685542cd6fe51b90bcc1efa7f15). `nextPokeId` 0 → 1; the position's encrypted debt was **wiped** and collateral **seized** on-chain. Harness: [`scripts/liquidate.ts`](./scripts/liquidate.ts).
+
 ---
 
 ## 🌫 GhostGate netting
