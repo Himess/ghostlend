@@ -12,6 +12,7 @@ No plaintext position ever touches the chain. Built on Zama FHEVM. Live on Sepol
 [![Built on Zama FHEVM](https://img.shields.io/badge/Built%20on-Zama%20FHEVM-FFD208?style=for-the-badge&labelColor=1a1a1a)](https://docs.zama.ai/protocol)
 [![Network](https://img.shields.io/badge/Ethereum-Sepolia-627EEA?style=for-the-badge&labelColor=1a1a1a)](https://sepolia.etherscan.io/)
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.27-363636?style=for-the-badge&labelColor=1a1a1a)](https://soliditylang.org/)
+[![Zama Developer Program S3](https://img.shields.io/badge/Zama%20Dev%20Program%20S3-Builder%20Track%20Winner%2C%202nd%20Place-C9A227?style=for-the-badge&labelColor=1a1a1a)](https://www.zama.org/post/announcing-the-developer-program-mainnet-season-3-winners)
 
 [![Live Demo](https://img.shields.io/badge/▶%20Live%20Demo-ghostlend.vercel.app-2fbf7a?style=flat-square)](https://ghostlend.vercel.app)
 [![Slides](https://img.shields.io/badge/📊%20Deck-ghostlend--deck.vercel.app-5c9bff?style=flat-square)](https://ghostlend-deck.vercel.app)
@@ -339,7 +340,7 @@ Full design-of-record: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) · [`doc
 
 <div align="center">
 
-### Built for the **Zama Developer Program · Season 3**
+### Built for the **Zama Developer Program · Mainnet Season 3** — Builder Track Winner, 2nd place
 
 **[🌐 ghostlend.vercel.app](https://ghostlend.vercel.app) · [📊 Deck](https://ghostlend-deck.vercel.app) · [🔐 Zama Protocol](https://docs.zama.ai/protocol)**
 
